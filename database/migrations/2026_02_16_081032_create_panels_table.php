@@ -22,7 +22,7 @@ return new class extends Migration
         // 2. Link Panels to Spatie Roles
         Schema::create('panel_user', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('panel_id')->constrained()->onDelete('cascade');
+            $table->foreignId('panel_id')->constrained('panels')->onDelete('cascade');
             // Link to Spatie's roles table id
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
         });

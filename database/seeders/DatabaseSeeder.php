@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Spatie\Permission\Models\Permission;
 
 class DatabaseSeeder extends Seeder
 {
@@ -17,11 +18,16 @@ class DatabaseSeeder extends Seeder
         $this->call([
             PermissionSeeder::class,
             PanelSeeder::class,
+            AssignPermissionSeeder::class
         ]);
         User::factory()->create([
             'name' => 'superadmin',
             'email' => 'superadmin@gmail.com',
             'password' => bcrypt('password'),
         ]);
+        $user = User::find(1);
+        $user->assignRole('admin');
+        $user->panels()->attach(1);
+      
     }
 }

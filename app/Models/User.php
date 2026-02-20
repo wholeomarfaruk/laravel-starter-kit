@@ -9,11 +9,12 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Jetstream\HasProfilePhoto;
 use Laravel\Sanctum\HasApiTokens;
+use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
     use HasApiTokens;
-
+    use HasRoles;
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory;
     use HasProfilePhoto;
@@ -65,7 +66,7 @@ class User extends Authenticatable
         ];
     }
     // User has many panels
-      public function panels()
+    public function panels()
     {
         return $this->belongsToMany(Panel::class);
     }
@@ -74,4 +75,10 @@ class User extends Authenticatable
     {
         return $this->panels()->where('slug', $panelSlug)->exists();
     }
+    //roleName
+    public function roleName(): ?string
+    {
+        return $this->getRoleNames()->first();
+    }
+
 }
