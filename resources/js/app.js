@@ -137,3 +137,12 @@ window.Sortable = Sortable;
 // import 'boxicons/css/boxicons.min.css';
 
 //Boxicons==================================================END
+
+// fancybox==================================================START
+
+import { Fancybox } from "@fancyapps/ui";
+import "@fancyapps/ui/dist/fancybox/fancybox.css";
+
+// fancybox==================================================END
+//import sticky header
+import './website/sticky';

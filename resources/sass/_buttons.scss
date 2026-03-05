@@ -1,0 +1,51 @@
+@use "variables";
+@use "mixins";
+
+@mixin btn-d1($width: 8em,$height: 2.5em,$text-color: #0fd850,$gradient-start: #0fd850,$gradient-end: #f9f047,$radius: 30em) {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    width: $width;
+    height: $height;
+    border-radius: $radius;
+    font-size: 1rem;
+    font-family: inherit;
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+    border:1px solid #d8d8d881;
+
+    box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
+    color: $text-color;
+    font-weight: 600;
+    transition: .5s ease;
+    svg {
+        width: mixins.rem(20px);
+        height:  mixins.rem(20px);
+    }
+
+    &::before {
+        content: '';
+        width: 0;
+        height: 100%;
+        border-radius: $radius;
+        position: absolute;
+        top: 0;
+        left: 0;
+        background-image: linear-gradient(to right,
+                $gradient-start 0%,
+                $gradient-end 100%);
+        transition: .5s ease;
+        z-index: -1;
+    }
+
+    &:hover::before {
+        width: 100%;
+    }
+
+    &:hover {
+        color: #fff;
+        border-color: transparent;
+    }
+}
