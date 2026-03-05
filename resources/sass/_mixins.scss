@@ -1,0 +1,27 @@
+@use "sass:map";
+
+// Define breakpoints
+$breakpoints: (
+  "xs": 480px,
+  "sm": 640px,
+  "md": 768px,
+  "lg": 1024px,
+  "xl": 1280px,
+  "2xl": 1536px
+);
+
+
+@mixin breakpoint($size) {
+  @if map.has-key($breakpoints, $size) {
+    @media (max-width: map.get($breakpoints, $size)) {
+      @content;
+    }
+  } @else {
+    @warn "⚠️ Warning: Breakpoint '#{$size}' is not defined!";
+  }
+}
+
+// px to rem
+@function rem($px) {
+  @return $px / 16px * 1rem;
+}

@@ -73,3 +73,4 @@ A production-ready Laravel 12 SaaS starter template with multi-panel authenticat
 ```bash
 git clone https://github.com/wholeomarfaruk/laravel-starter-kit.git
 cd laravel-starter-kit
+# sud-website
