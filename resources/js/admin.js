@@ -11,13 +11,13 @@ window.jQuery = $;
 
 // SwiperJs==================================================
 // core version + navigation, pagination modules:
-import Swiper from 'swiper';
-import { Navigation, Pagination } from 'swiper/modules';
-// import Swiper and modules styles
-import 'swiper/css';
-import 'swiper/css/navigation';
-import 'swiper/css/pagination';
+// import Swiper bundle with all modules installed
+import Swiper from 'swiper/bundle';
 
+// import styles bundle
+import 'swiper/css/bundle';
+
+window.Swiper = Swiper;
 
 // SplideJs================================================
 
@@ -36,6 +36,9 @@ import 'filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css';
 
 import FilePondPluginFileValidateType from 'filepond-plugin-file-validate-type';
 
+// expose to window for Alpine / Livewire
+window.FilePond = FilePond;
+
 // Register plugins
 FilePond.registerPlugin(
     FilePondPluginImagePreview,
@@ -43,14 +46,37 @@ FilePond.registerPlugin(
 );
 
 // Initialize
-document.addEventListener('DOMContentLoaded', function () {
-    document.querySelectorAll('.filepond').forEach(input => {
-        FilePond.create(input, {
-            allowMultiple: true,
-            acceptedFileTypes: ['image/*'],
-        });
-    });
-});
+// document.addEventListener('DOMContentLoaded', function () {
+//     console.log('Filepond');
+//     console.log(FilePond);
+
+//     document.querySelectorAll('.filepond').forEach(input => {
+
+//         FilePond.create(input, {
+//             allowMultiple: true,
+//             acceptedFileTypes: ['image/*'],
+//             server: {
+//                 process: {
+//                     url: '/admin/upload',
+//                     method: 'POST',
+//                     headers: {
+//                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+//                     }
+//                 },
+
+//                 revert: {
+//                     url: '/admin/upload/revert',
+//                     method: 'DELETE',
+//                     headers: {
+//                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+//                     }
+//                 }
+//             }
+//         });
+
+//     });
+
+// });
 // Filepond ===================================================END
 //-------------------------------------------------------------
 //-------------------------------------------------------------
@@ -137,3 +163,17 @@ window.Sortable = Sortable;
 // import 'boxicons/css/boxicons.min.css';
 
 //Boxicons==================================================END
+// fancybox==================================================START
+
+import { Fancybox } from "@fancyapps/ui";
+import "@fancyapps/ui/dist/fancybox/fancybox.css";
+
+window.Fancybox = Fancybox;
+// fancybox==================================================END
+
+// ChartJs==================================================START
+import Chart from 'chart.js/auto';
+
+window.Chart = Chart;
+
+// ChartJs==================================================END

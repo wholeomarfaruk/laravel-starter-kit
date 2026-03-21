@@ -1,7 +1,6 @@
 // AlpineJs ==================================================
-import Alpine from 'alpinejs'
-window.Alpine = Alpine
-Alpine.start()
+// import Alpine from 'alpinejs'
+// window.Alpine = Alpine
 
 // Jquery ==================================================
 import $ from 'jquery';
@@ -10,13 +9,14 @@ window.jQuery = $;
 
 
 // SwiperJs==================================================
-// core version + navigation, pagination modules:
-import Swiper from 'swiper';
-import { Navigation, Pagination } from 'swiper/modules';
-// import Swiper and modules styles
-import 'swiper/css';
-import 'swiper/css/navigation';
-import 'swiper/css/pagination';
+
+// import Swiper bundle with all modules installed
+import Swiper from 'swiper/bundle';
+
+// import styles bundle
+import 'swiper/css/bundle';
+
+window.Swiper = Swiper;
 
 
 // SplideJs================================================
@@ -25,8 +25,7 @@ import Splide from '@splidejs/splide';
 import '@splidejs/splide/css'; // default theme
 
 
-
-//Filepond ===================================================START
+// Filepond ===================================================START
 
 import * as FilePond from 'filepond';
 import 'filepond/dist/filepond.min.css';
@@ -36,6 +35,9 @@ import 'filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css';
 
 import FilePondPluginFileValidateType from 'filepond-plugin-file-validate-type';
 
+// expose to window for Alpine / Livewire
+window.FilePond = FilePond;
+
 // Register plugins
 FilePond.registerPlugin(
     FilePondPluginImagePreview,
@@ -44,13 +46,19 @@ FilePond.registerPlugin(
 
 // Initialize
 document.addEventListener('DOMContentLoaded', function () {
+    console.log('Filepond');
+    console.log(FilePond);
     document.querySelectorAll('.filepond').forEach(input => {
+
         FilePond.create(input, {
             allowMultiple: true,
             acceptedFileTypes: ['image/*'],
         });
+
     });
+
 });
+
 // Filepond ===================================================END
 //-------------------------------------------------------------
 //-------------------------------------------------------------
@@ -103,17 +111,17 @@ window.notyf = new Notyf({
         y: 'top',
     },
 });
-document.addEventListener('livewire:init', () => {
+// document.addEventListener('livewire:init', () => {
 
-    Livewire.on('notify', ({ type, message }) => {
-        if (type === 'success') {
-            notyf.success(message);
-        } else {
-            notyf.error(message);
-        }
-    });
+//     Livewire.on('notify', ({ type, message }) => {
+//         if (type === 'success') {
+//             notyf.success(message);
+//         } else {
+//             notyf.error(message);
+//         }
+//     });
 
-});
+// });
 
 //Notyf==================================================END
 //-------------------------------------------------------------
@@ -137,3 +145,11 @@ window.Sortable = Sortable;
 // import 'boxicons/css/boxicons.min.css';
 
 //Boxicons==================================================END
+
+// fancybox==================================================START
+
+import { Fancybox } from "@fancyapps/ui";
+import "@fancyapps/ui/dist/fancybox/fancybox.css";
+
+window.Fancybox = Fancybox;
+// fancybox==================================================END
