@@ -26,7 +26,7 @@ class DatabaseSeeder extends Seeder
             'password' => bcrypt('password'),
         ]);
         $user = User::find(1);
-        $user->assignRole('admin');
+        $user->assignRole('superadmin');
         $user->panels()->attach(1);
       
     }
