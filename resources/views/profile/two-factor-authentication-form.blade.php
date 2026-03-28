@@ -28,7 +28,7 @@
 
         @if ($this->enabled)
             @if ($showingQrCode)
-                <div class="mt-4 max-w-xl text-sm text-gray-600">
+                <div class="mt-4 max-w-xl text-sm text-gray-600 relative">
                     <p class="font-semibold">
                         @if ($showingConfirmation)
                             {{ __('To finish enabling two factor authentication, scan the following QR code using your phone\'s authenticator application or enter the setup key and provide the generated OTP code.') }}
@@ -49,7 +49,7 @@
                 </div>
 
                 @if ($showingConfirmation)
-                    <div class="mt-4">
+                    <div class="mt-4 relative">
                         <x-label for="code" value="{{ __('Code') }}" />
 
                         <x-input id="code" type="text" name="code" class="block mt-1 w-1/2" inputmode="numeric" autofocus autocomplete="one-time-code"

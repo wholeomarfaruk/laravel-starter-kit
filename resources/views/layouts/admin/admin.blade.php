@@ -307,6 +307,7 @@
                         Permissions</h1>
 
                 </a>
+  
                 <!-- Role and permissions -->
                 {{-- <a href="{{ route('admin.admin.profile') }}" x-data="tooltip"
                     x-on:mouseover="show = true" x-on:mouseleave="show = false"
@@ -420,6 +421,67 @@
         <div>
 
             <hr class="border-gray-700 mt-4">
+            <!-- Profile / Dropup -->
+<div x-data="{ openProfile: false }" class="relative px-2 py-2">
+    <div @click="openProfile = !openProfile"
+        class="flex items-center justify-between rounded-md p-2 cursor-pointer text-gray-300 hover:bg-gray-800 hover:text-white transition"
+        :class="{
+            'justify-center': !$store.sidebar.full,
+            'justify-between': $store.sidebar.full
+        }">
+
+        <div class="flex items-center gap-3 overflow-hidden">
+            <!-- Profile Image -->
+            <img
+                src="{{auth()->user()->profile_photo_path ? file_path(auth()->user()->profile_photo_path) : 'https://ui-avatars.com/api/?name=' . auth()->user()->name . '&background=111827&color=ffffff&bold=true'}}"
+                alt="Profile"
+                class="w-10 h-10 rounded-full object-cover border border-gray-700 shrink-0">
+
+            <!-- User info -->
+            <div x-cloak x-show="$store.sidebar.full" x-transition class="min-w-0">
+                <h4 class="text-sm font-semibold text-white truncate">{{ auth()->user()->name }}</h4>
+                <p class="text-xs text-gray-400 truncate">{{ auth()->user()->email }}</p>
+            </div>
+        </div>
+
+        <!-- Arrow -->
+        <svg x-cloak x-show="$store.sidebar.full"
+            xmlns="http://www.w3.org/2000/svg"
+            class="w-4 h-4 text-gray-400 transition-transform"
+            :class="{ 'rotate-180': openProfile }"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M19 9l-7 7-7-7" />
+        </svg>
+    </div>
+
+    <!-- Dropup menu -->
+    <div x-cloak
+        x-show="openProfile"
+        x-transition
+        @click.outside="openProfile = false"
+        class="absolute bottom-16 left-2 right-2 bg-gray-800 border border-gray-700 rounded-lg shadow-lg overflow-hidden z-50">
+
+        <a href="{{ route('admin.profile') }}"
+            class="block px-4 py-3 text-sm text-gray-300 hover:bg-gray-700 hover:text-white">
+            My Profile
+        </a>
+
+        <a href="{{ route('admin.settings') }}"
+            class="block px-4 py-3 text-sm text-gray-300 hover:bg-gray-700 hover:text-white">
+            Account Settings
+        </a>
+
+        <button type="button"
+            @click="$refs.logoutForm.submit()"
+            class="w-full text-left px-4 py-3 text-sm text-red-400 hover:bg-gray-700">
+            Logout
+        </button>
+    </div>
+</div>
+
             <!-- logout -->
             <div x-data="tooltip" @click="$refs.logoutForm.submit()" @mouseover="show = true"
                 @mouseleave="show = false"
@@ -483,7 +545,7 @@
             // Stores variable globally
             Alpine.store('sidebar', {
                 full: false,
-                active: 'pos',
+                active: 'dashboard',
                 navOpen: false,
             });
             Alpine.store('pageName', {
@@ -516,7 +578,7 @@
                 show: false,
                 visibleClass: 'block sm:absolute -top-7 sm:border border-gray-800 left-5 sm:text-sm sm:bg-gray-900 sm:px-2 sm:py-1 sm:rounded-md'
             }))
-            console.log(Alpine.store('sidebar').active);
+           
         })
     </script>
     @livewireScripts

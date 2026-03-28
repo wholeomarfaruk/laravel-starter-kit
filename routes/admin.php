@@ -8,6 +8,10 @@ Route::get('/dashboard', \App\Livewire\Admin\Dashboard\Dashboard::class)->name('
 //user managements
 Route::get('/users', App\Livewire\Admin\Users\Users::class)->name('users');
 
+// Profile and Settings
+Route::get('/profile', App\Livewire\Admin\Profile\Profile::class)->name('profile');
+Route::get('/settings', App\Livewire\Admin\Settings\Settings::class)->name('settings');
+
 //permissions
 Route::get('/permissions/roles', App\Livewire\Admin\Permissions\RoleList::class)->name('roles.list');
 Route::get('/permissions/role/create', App\Livewire\Admin\Permissions\RoleCreate::class)->name('roles.create');
