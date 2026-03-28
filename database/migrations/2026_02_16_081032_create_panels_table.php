@@ -33,7 +33,7 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::dropIfExists('panel_user'); 
         Schema::dropIfExists('panels');
-        Schema::dropIfExists('panel_role');
     }
 };
