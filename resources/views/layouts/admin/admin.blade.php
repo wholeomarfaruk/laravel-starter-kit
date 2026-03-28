@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Laravel Starter Kit</title>
-        @vite(['resources/sass/admin.scss','resources/css/admin.css', 'resources/js/admin.js'])
+    @vite(['resources/sass/admin.scss', 'resources/css/admin.css', 'resources/js/admin.js'])
     @livewireStyles
 </head>
 
@@ -98,11 +99,11 @@
                             d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                     </svg>
                     <h1 x-cloak
-                        x-bind:class="!$store.sidebar.full && show ? visibleClass : '' || !$store.sidebar.full  ?
+                        x-bind:class="!$store.sidebar.full && show ? visibleClass : '' || !$store.sidebar.full ?
                             'sm:hidden' : ''">
                         Dashboard</h1>
                 </a>
-                  <!-- uploads -->
+                <!-- uploads -->
                 <a href="{{ route('admin.uploads') }}" x-data="tooltip" x-on:mouseover="show = true"
                     x-on:mouseleave="show = false"
                     class="relative flex items-center hover:text-gray-200 hover:bg-gray-800 space-x-2 rounded-md p-2 cursor-pointer justify-start text-gray-400
@@ -241,47 +242,39 @@
                             'sm:hidden' : ''">
                         Transections</h1>
                 </a> --}}
-                <!-- Reports -->
+                <!-- User Management -->
                 <div x-data="dropdown" class="relative">
-                    <!-- Dropdown head -->
-                    <div @click="toggle('users')" x-data="tooltip" x-on:mouseover="show = true"
-                        x-on:mouseleave="show = false"
+                    <div @click="toggle('users')" x-data="tooltip" @mouseover="show = true"
+                        @mouseleave="show = false"
                         class="flex justify-between text-gray-400 hover:text-gray-200 hover:bg-gray-800 items-center space-x-2 rounded-md p-2 cursor-pointer"
-                        x-bind:class="{
+                        :class="{
                             'justify-start': $store.sidebar.full,
-                            'sm:justify-center': !$store.sidebar
-                                .full,
+                            'sm:justify-center': !$store.sidebar.full,
                             'text-gray-200 bg-gray-800': $store.sidebar.active == 'Reports',
-                            'text-gray-400 ': $store
-                                .sidebar.active != 'Reports'
+                            'text-gray-400': $store.sidebar.active != 'Reports'
                         }">
                         <div class="relative flex items-center gap-2">
-
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
                                 stroke="currentColor" class="h-6 w-6">
                                 <path stroke-linecap="round" stroke-linejoin="round"
                                     d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
                             </svg>
 
-
-                            <h1 x-cloak
-                                x-bind:class="!$store.sidebar.full && show ? visibleClass : '' || !$store.sidebar.full  ?
-                                    'sm:hidden' : ''">
-                                User Management</h1>
+                            <h1 x-cloak :class="!$store.sidebar.full ? (show ? visibleClass : 'sm:hidden') : ''">
+                                User Management
+                            </h1>
                         </div>
 
-                        <svg x-cloak x-bind:class="$store.sidebar.full ? '' : 'sm:hidden'"
-                            xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 size-6" viewBox="0 0 20 20"
-                            stroke-width="1.5" fill="currentColor">
+                        <svg x-cloak :class="$store.sidebar.full ? '' : 'sm:hidden'" xmlns="http://www.w3.org/2000/svg"
+                            class="h-4 w-4 size-6" viewBox="0 0 20 20" stroke-width="1.5" fill="currentColor">
                             <path fill-rule="evenodd"
                                 d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
                                 clip-rule="evenodd" />
                         </svg>
                     </div>
-                    <!-- Dropdown content -->
+
                     <div x-cloak x-show="open" @click.outside="open=false"
-                        x-bind:class="$store.sidebar.full && show ? expandedClass : shrinkedClass"
-                        class="text-gray-400 space-y-3">
+                        :class="$store.sidebar.full ? expandedClass : shrinkedClass" class="text-gray-400 space-y-3">
                         <a href="{{ route('admin.users') }}" class="hover:text-gray-200 cursor-pointer">Users</a>
                     </div>
                 </div>
@@ -309,8 +302,8 @@
                     </svg>
 
                     <h1 x-cloak
-                        x-bind:class="!$store.sidebar.full && show ? visibleClass : '' || !$store.sidebar.full  ?
-                                    'sm:hidden' : ''">
+                        x-bind:class="!$store.sidebar.full && show ? visibleClass : '' || !$store.sidebar.full ?
+                            'sm:hidden' : ''">
                         Permissions</h1>
 
                 </a>
@@ -427,11 +420,11 @@
         <div>
 
             <hr class="border-gray-700 mt-4">
-            <!-- Schedules -->
-            <div x-data @click="$refs.logoutForm.submit()" x-on:mouseover="show = true"
-                x-on:mouseleave="show = false"
+            <!-- logout -->
+            <div x-data="tooltip" @click="$refs.logoutForm.submit()" @mouseover="show = true"
+                @mouseleave="show = false"
                 class="relative flex justify-between items-center text-gray-400 hover:text-gray-200 hover:bg-gray-800 space-x-2 rounded-md p-2 cursor-pointer"
-                x-bind:class="{
+                :class="{
                     'justify-start': $store.sidebar.full,
                     'sm:justify-center': !$store.sidebar.full,
                     'text-gray-200 bg-gray-800': $store.sidebar.active == 'logout',
@@ -444,17 +437,14 @@
                             d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                     </svg>
 
-                    <span x-cloak
-                        x-bind:class="!$store.sidebar.full ? visibleClass : (!$store.sidebar.full ? 'sm:hidden' : '')">
+                    <span x-cloak :class="!$store.sidebar.full ? (show ? visibleClass : 'sm:hidden') : ''">
                         Logout
                     </span>
                 </div>
 
-                <!-- Hidden Logout Form -->
                 <form x-ref="logoutForm" action="{{ route('logout') }}" method="POST" class="hidden">
                     @csrf
                 </form>
-
             </div>
 
 
@@ -532,4 +522,5 @@
     @livewireScripts
     @stack('scripts')
 </body>
+
 </html>
