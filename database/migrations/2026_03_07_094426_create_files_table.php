@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('type')->nullable(); // image, video, audio, document
             $table->string('extension')->nullable(); // .jpg, .mp4, .mp3, .pdf
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

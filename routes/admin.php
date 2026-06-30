@@ -17,6 +17,12 @@ Route::get('/permissions/roles', App\Livewire\Admin\Permissions\RoleList::class)
 Route::get('/permissions/role/create', App\Livewire\Admin\Permissions\RoleCreate::class)->name('roles.create');
 Route::get('/permissions/role/edit/{id}', App\Livewire\Admin\Permissions\RoleEdit::class)->name('roles.edit');
 
+// System Settings
+Route::get('/system-settings', App\Livewire\Admin\SystemSettings\SystemSettings::class)->name('system-settings');
+
+// Activity Log
+Route::get('/activity-log', App\Livewire\Admin\ActivityLog\ActivityLog::class)->name('activity-log');
+
 //uploads
 Route::get('/uploads', App\Livewire\Admin\File\Uploads::class)->name('uploads');
 Route::post('/upload', [FileUploadController::class, 'storeAdmin']);

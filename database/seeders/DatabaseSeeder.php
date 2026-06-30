@@ -18,7 +18,10 @@ class DatabaseSeeder extends Seeder
         $this->call([
             PermissionSeeder::class,
             PanelSeeder::class,
-            AssignPermissionSeeder::class
+            AssignPermissionSeeder::class,
+            SettingsSeeder::class,
+            CountrySeeder::class,
+            CurrencySeeder::class,
         ]);
         User::factory()->create([
             'name' => 'superadmin',
