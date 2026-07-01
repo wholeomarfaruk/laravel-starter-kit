@@ -6,23 +6,62 @@
                 .navOpen,
             'top-0 -left-64 sm:left-0': !$store.sidebar.navOpen
         }">
-        <div>
-            <h1 class="text-white font-black py-4"
-                x-bind:class="$store.sidebar.full ? 'text-2xl px-4' : 'text-xl px-4 xm:px-2'">Admin</h1>
-        </div>
-        <div class="px-4 space-y-2">
+        @php
+            $siteName      = \App\Models\Setting::get('site_name', config('app.name'), 'general');
+            $logoWhite     = \App\Models\Setting::get('site_logo_white', null, 'general');
+            $logoSymbol    = \App\Models\Setting::get('site_logo_symbol', null, 'general');
+            $logoWhiteUrl  = $logoWhite  ? file_path($logoWhite)  : null;
+            $logoSymbolUrl = $logoSymbol ? file_path($logoSymbol) : null;
+            $initial       = strtoupper(mb_substr($siteName, 0, 1));
+        @endphp
 
-            <!-- SideBar Toggle -->
+        {{-- ── Logo / Brand ── --}}
+        <div class="relative flex items-center border-b border-white/5 h-20 shrink-0">
+
+            {{-- Expanded: horizontal logo or text --}}
+            <div x-show="$store.sidebar.full" x-cloak
+                 x-transition:enter="transition-opacity ease-out duration-150"
+                 x-transition:enter-start="opacity-0"
+                 x-transition:enter-end="opacity-100"
+                 class="flex items-center gap-3 px-4 w-full overflow-hidden">
+                @if($logoWhiteUrl)
+                    <img src="{{ $logoWhiteUrl }}" alt="{{ $siteName }}"
+                         class="h-14 w-full object-contain object-left">
+                @else
+                    <div class="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center shrink-0 shadow-sm">
+                        <span class="text-white font-black text-base leading-none select-none">{{ $initial }}</span>
+                    </div>
+                    <span class="text-white font-bold text-base tracking-tight truncate leading-none">{{ $siteName }}</span>
+                @endif
+            </div>
+
+            {{-- Collapsed: symbol logo or initial --}}
+            <div x-show="!$store.sidebar.full" x-cloak
+                 class="flex items-center justify-center w-full">
+                @if($logoSymbolUrl)
+                    <img src="{{ $logoSymbolUrl }}" alt="{{ $siteName }}"
+                         class="w-10 h-10 object-contain">
+                @else
+                    <div class="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center shadow-sm">
+                        <span class="text-white font-black text-base leading-none select-none">{{ $initial }}</span>
+                    </div>
+                @endif
+            </div>
+
+            {{-- Sidebar toggle --}}
             <button @click="$store.sidebar.full = !$store.sidebar.full; localStorage.setItem('sidebar_full', $store.sidebar.full)"
-                class="hidden sm:block focus:outline-none absolute p-1 -right-3 top-10 bg-gray-900 rounded-full shadow-md cursor-pointer">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-all duration-300 text-white transform"
-                    x-bind:class="$store.sidebar.full ? 'rotate-90' : '-rotate-90 '" viewBox="0 0 20 20"
-                    fill="currentColor">
+                class="hidden sm:flex items-center justify-center absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-gray-900 border border-gray-700 rounded-full shadow-md focus:outline-none cursor-pointer hover:bg-gray-800 transition">
+                <svg class="h-3 w-3 text-gray-400 transition-transform duration-300"
+                     :class="$store.sidebar.full ? '' : 'rotate-180'"
+                     viewBox="0 0 20 20" fill="currentColor">
                     <path fill-rule="evenodd"
-                        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                        clip-rule="evenodd" />
+                        d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
+                        clip-rule="evenodd"/>
                 </svg>
             </button>
+        </div>
+
+        <div class="px-4 space-y-2">
             <!-- Sales Point -->
 
             <div class="h-[70vh]  scrollbar scrollbar-thumb-gray-900  scrollbar-thin scrollbar-track-transparent"
