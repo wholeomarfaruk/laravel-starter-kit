@@ -29,8 +29,6 @@
     <div class="flex-1 w-full bg-white rounded-lg min-h-[80vh] p-6">
         {{-- ======================== Content Start From Here ======================== --}}
         <div class="max-w-4xl mx-auto space-y-6">
-
-          
             {{-- Account Status --}}
             <div class="bg-gray-50 rounded-lg p-6">
                 <h2 class="text-xl font-semibold text-gray-900 mb-4">Account Status</h2>
@@ -142,7 +140,7 @@
 
             {{-- Two-Factor Authentication --}}
             <div class="bg-white border border-gray-200 rounded-lg p-6">
-              
+
                 @if (Laravel\Fortify\Features::enabled(Laravel\Fortify\Features::twoFactorAuthentication()))
                     @livewire('profile.two-factor-authentication-form')
                 @else
@@ -152,7 +150,7 @@
 
             {{-- Browser Sessions --}}
             <div class="bg-white border border-gray-200 rounded-lg p-6">
-            
+
                 @livewire('profile.logout-other-browser-sessions-form')
             </div>
 
