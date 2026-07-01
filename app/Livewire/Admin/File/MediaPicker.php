@@ -2,105 +2,127 @@
 
 namespace App\Livewire\Admin\File;
 
-use Livewire\Component;
 use App\Models\File;
 use App\Models\FileItem;
 use Illuminate\Support\Facades\Storage;
+use Livewire\Component;
 use Livewire\WithPagination;
+
 class MediaPicker extends Component
 {
-    public $mediapickerModal = false;
-    public $selected = [];
-    public $multiple = false;
-    public $showModal = false;
-    public $target;
-    public $type;
-    protected $listeners = ['openMediaPicker','fileUploaded'];
-    public $search = ''; // optional: for search/filter
- use WithPagination; // ✅ enable pagination
-    protected $paginationTheme = 'tailwind'; // 'bootstrap' also works
-    public function updatingSearch()
+    use WithPagination;
+
+    public bool $mediapickerModal = false;
+    public array $selected = [];
+    public bool $multiple = false;
+    public ?string $target = null;
+    public ?string $type = null;
+    public string $search = '';
+    public string $filterType = '';
+
+    protected string $paginationTheme = 'tailwind';
+    protected $listeners = ['openMediaPicker', 'fileUploaded'];
+
+    public function updatingSearch(): void
     {
-        $this->resetPage(); // reset page on search update
+        $this->resetPage();
     }
-    public function openMediaPicker($target = null, $multiple = false, $type = null)
+
+    public function updatingFilterType(): void
+    {
+        $this->resetPage();
+    }
+
+    public function openMediaPicker($target = null, $multiple = false, $type = null): void
     {
         $this->target = $target;
         $this->multiple = $multiple;
         $this->type = $type;
+        $this->filterType = $type ?? '';
+        $this->reset('selected', 'search');
+        $this->resetPage();
         $this->mediapickerModal = true;
-        $this->reset('selected');
     }
-    public function render()
+
+    public function selectAll(array $ids): void
     {
-        $files = File::query()
-            ->when($this->type, function ($query) {
-                $query->where('type', $this->type);
-            })
-            ->when($this->search, function ($query) {
-                $query->where('name', 'like', '%' . $this->search . '%');
-            })
-            ->with('items')
-            ->orderBy('created_at', 'desc')
-            ->paginate(15);
-
-        return view('livewire.admin.file.media-picker', compact('files'));
+        $this->selected = array_values(array_unique(array_merge($this->selected, $ids)));
     }
 
-    public function delete($id)
+    public function deselectAll(): void
+    {
+        $this->selected = [];
+    }
+
+    public function selectImage(int $id): void
+    {
+        if ($this->multiple) {
+            if (in_array($id, $this->selected)) {
+                $this->selected = array_values(array_diff($this->selected, [$id]));
+            } else {
+                $this->selected[] = $id;
+            }
+        } else {
+            $this->selected = [$id];
+        }
+    }
+
+    public function save(): void
+    {
+        if (empty($this->selected)) {
+            $this->close();
+            return;
+        }
+
+        $id = $this->multiple ? array_values($this->selected) : $this->selected[0];
+        $this->dispatch('mediaSelected', field: $this->target, id: $id);
+        $this->close();
+    }
+
+    public function close(): void
+    {
+        $this->mediapickerModal = false;
+        $this->reset('selected', 'search', 'filterType', 'target', 'type', 'multiple');
+    }
+
+    public function removeSelect(int $id): void
+    {
+        $this->selected = array_values(array_diff($this->selected, [$id]));
+    }
+
+    public function delete(int $id): void
     {
         $file = File::find($id);
 
         if ($file) {
-
-            $item = FileItem::where('file_id', $file->id)->first();
-
-            if ($item) {
+            foreach (FileItem::where('file_id', $file->id)->get() as $item) {
                 Storage::disk('public')->delete($item->path);
                 $item->delete();
             }
-
             $file->delete();
-            $this->files = File::all();
+            $this->selected = array_values(array_diff($this->selected, [$id]));
         }
     }
-    public function selectImage($id)
+
+    public function fileUploaded(): void
     {
-        if ($this->multiple) {
-
-            if (in_array($id, $this->selected)) {
-                $this->selected = array_diff($this->selected, [$id]);
-            } else {
-                $this->selected[] = $id;
-            }
-
-        } else {
-
-            $this->selected = [$id];
-
-
-        }
-
+        $this->resetPage();
     }
-    public function save()
-    {
-        if ($this->multiple) {
 
-
-            $this->dispatch('mediaSelected', field: $this->target, id: $this->selected);
-        } else {
-
-            $this->dispatch('mediaSelected', field: $this->target, id: $this->selected[0]);
-        }
-        $this->mediapickerModal = false;
-    }
-    public function removeSelect($id)
+    public function render()
     {
-        $this->selected = array_diff($this->selected, [$id]);
-    }
-    public function fileUploaded()
-    {
-        // Refresh the file list after a new file is uploaded
-        $this->resetPage(); // Reset to the first page
+        $query = File::query()
+            ->when($this->type, fn($q) => $q->where('type', $this->type))
+            ->when($this->filterType, fn($q) => $q->where('type', $this->filterType))
+            ->when($this->search, fn($q) => $q->where('name', 'like', "%{$this->search}%"))
+            ->with('items')
+            ->latest();
+
+        $files = $query->paginate(15);
+
+        return view('livewire.admin.file.media-picker', [
+            'files' => $files,
+            'currentPageIds' => $files->pluck('id')->toArray(),
+        ]);
     }
 }

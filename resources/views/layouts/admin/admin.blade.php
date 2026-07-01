@@ -8,6 +8,7 @@
     <title>Laravel Starter Kit</title>
     @vite(['resources/sass/admin.scss', 'resources/css/admin.css', 'resources/js/admin.js'])
     @livewireStyles
+    @stack('styles')
 </head>
 
 <body x-data class=" mx-auto antialiased flex justify-between">
@@ -539,24 +540,10 @@
 
     <script>
         document.addEventListener('livewire:init', () => {
-            // php code
-            //      $this->dispatch('toast', [
-            //     'type' => 'success',
-            //     'message' => 'Item deleted successfully!'
-            // ]);
-            Livewire.on('toast', data => {
-                // console.log(data);
-                Swal.fire({
-                    toast: true,
-                    position: 'top-end',
-                    icon: data[0].type,
-                    title: data[0].message,
-                    showConfirmButton: false,
-                    timer: 3000,
-                    timerProgressBar: true
-                })
-            })
-        })
+            Livewire.on('toast', (data) => {
+                Toast.fire({ icon: data[0].type, title: data[0].message });
+            });
+        });
     </script>
 
     <script>
@@ -600,6 +587,7 @@
            
         })
     </script>
+    @livewire('admin.file.media-picker')
     @livewireScripts
     @stack('scripts')
 </body>

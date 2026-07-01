@@ -10,12 +10,19 @@ class ActivityLog extends Component
 {
     use WithPagination;
 
-    public string $search     = '';
+    public string $search      = '';
     public string $filterEvent = '';
+    public string $dateFrom    = '';
+    public string $dateTo      = '';
 
-    public function updatingSearch(): void
+    public function updatingSearch(): void  { $this->resetPage(); }
+    public function updatingFilterEvent(): void { $this->resetPage(); }
+    public function updatingDateFrom(): void { $this->resetPage(); }
+    public function updatingDateTo(): void  { $this->resetPage(); }
+
+    public function clearFilters(): void
     {
-        $this->resetPage();
+        $this->reset(['search', 'filterEvent', 'dateFrom', 'dateTo']);
     }
 
     public function render()
@@ -26,6 +33,8 @@ class ActivityLog extends Component
                 ->orWhere('subject_type', 'like', "%{$this->search}%")
             )
             ->when($this->filterEvent, fn($q) => $q->where('event', $this->filterEvent))
+            ->when($this->dateFrom,    fn($q) => $q->whereDate('created_at', '>=', $this->dateFrom))
+            ->when($this->dateTo,      fn($q) => $q->whereDate('created_at', '<=', $this->dateTo))
             ->latest()
             ->paginate(20);
 

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Models\File;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -44,10 +45,12 @@ class User extends Authenticatable
         'email',
         'password',
         'profile_photo_path',
+        'avatar_id',
         'phone',
         'country_code',
         'address',
         'bio',
+        'gender',
     ];
 
     /**
@@ -84,6 +87,11 @@ class User extends Authenticatable
             'phone_verified_at' => 'datetime',
         ];
     }
+    public function avatar()
+    {
+        return $this->belongsTo(File::class, 'avatar_id');
+    }
+
     // User has many panels
     public function panels()
     {

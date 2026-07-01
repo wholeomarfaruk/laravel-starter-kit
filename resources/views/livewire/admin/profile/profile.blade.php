@@ -36,8 +36,10 @@
                 <div class="flex items-start space-x-6">
                     <div class="flex-shrink-0">
                         @if($profile_photo_path)
-                            <img src="{{ file_path($profile_photo_path) }}" alt="Profile Photo"
-                                class="w-24 h-24 rounded-full object-cover border-4 border-white shadow-lg">
+                            <a data-fancybox href="{{ file_path($profile_photo_path) }}" title="View photo">
+                                <img src="{{ file_path($profile_photo_path) }}" alt="Profile Photo"
+                                    class="w-24 h-24 rounded-full object-cover border-4 border-white shadow-lg cursor-zoom-in">
+                            </a>
                         @else
                             <div class="w-24 h-24 rounded-full bg-gray-300 flex items-center justify-center">
                                 <svg class="w-12 h-12 text-gray-600" fill="currentColor" viewBox="0 0 24 24">

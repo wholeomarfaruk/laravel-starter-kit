@@ -1,295 +1,329 @@
-{{-- ======================== Page Layout Start From Here ======================== --}}
-<div x-data x-init="$store.pageName = { name: 'Uploads', slug: 'uploads' }">
-    {{-- ======================== Page Header Start From Here ======================== --}}
-    <div class="flex flex-wrap justify-between gap-6 ">
-        {{-- Page Name  --}}
-        <h1 class="text-gray-500 text-lg font-bold" x-cloak x-text="$store.pageName?.name ?? ''">
-        </h1>
-        {{-- Breadcrumb  --}}
-        <nav>
-            <ol class="flex items-center gap-1.5">
-                <li>
-                    <a class="inline-flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400"
-                        href="{{ route('admin.dashboard') }}">
-                        Dashboard
-                        <svg class="stroke-current" width="17" height="16" xmlns="http://www.w3.org/2000/svg"
-                            fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="m5.25 4.5 7.5 7.5-7.5 7.5m6-15 7.5 7.5-7.5 7.5" />
-                        </svg>
+<div x-data="uploadsPage()" x-init="$store.pageName = { name: 'Uploads', slug: 'uploads' }">
 
+    {{-- ── Page Header ── --}}
+    <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+        <h1 class="text-gray-700 text-xl font-bold" x-cloak x-text="$store.pageName?.name ?? ''"></h1>
+        <nav>
+            <ol class="flex items-center gap-1.5 text-sm">
+                <li>
+                    <a href="{{ route('admin.dashboard') }}" class="text-gray-500 hover:text-gray-700 flex items-center gap-1">
+                        Dashboard
+                        <svg class="stroke-current w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="m5.25 4.5 7.5 7.5-7.5 7.5m6-15 7.5 7.5-7.5 7.5" />
+                        </svg>
                     </a>
                 </li>
-                <li class="text-sm text-gray-800 dark:text-white/90" x-text="$store.pageName?.name ?? ''"></li>
+                <li class="text-gray-800 font-medium" x-text="$store.pageName?.name ?? ''"></li>
             </ol>
         </nav>
     </div>
-    {{-- ======================== Page Header End Here ======================== --}}
 
-    <div class="flex-1 w-full bg-white rounded-lg min-h-[80vh]">
-        {{-- ======================== Content Start From Here ======================== --}}
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 min-h-[80vh] flex flex-col">
 
+        {{-- ── Toolbar ── --}}
+        <div class="flex flex-wrap items-center gap-3 px-5 py-4 border-b border-gray-200">
 
-        <div class="grid grid-cols-2 gap-4 px-4 py-4 ">
-            <div>
-                <label for="Search">
-                    {{-- <span class="text-sm font-medium text-gray-700"> Search </span> --}}
+            {{-- Search --}}
+            <div class="relative flex-1 min-w-48">
+                <input
+                    type="text"
+                    wire:model.live.debounce.400ms="search"
+                    placeholder="Search by name..."
+                    class="w-full rounded-lg border border-gray-300 pl-9 pr-4 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                >
+                <svg xmlns="http://www.w3.org/2000/svg" class="absolute left-3 top-2.5 h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+                </svg>
+            </div>
 
-                    <div class="relative">
-                        <input type="text" wire:model.live.debounce="search" id="Search"
-                            placeholder="Search by Name, Email"
-                            class="mt-0.5 w-full rounded border border-gray-300 px-2 py-2 shadow-sm sm:text-sm">
-
-                        <span class="absolute inset-y-0 right-2 grid w-8 place-content-center">
-                            <button type="button" aria-label="Submit"
-                                class="rounded-full p-1.5 text-gray-700 transition-colors hover:bg-gray-100">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                    stroke-width="1.5" stroke="currentColor" class="size-4">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z">
-                                    </path>
-                                </svg>
-                            </button>
-                        </span>
-                    </div>
+            {{-- Type filter --}}
+            <div class="flex items-center gap-2 text-sm">
+                <label class="flex items-center gap-1.5 cursor-pointer text-gray-600 hover:text-gray-800">
+                    <input type="radio" wire:model.live="filterType" value="" class="accent-indigo-600"> All
+                </label>
+                <label class="flex items-center gap-1.5 cursor-pointer text-gray-600 hover:text-gray-800">
+                    <input type="radio" wire:model.live="filterType" value="image" class="accent-indigo-600"> Images
+                </label>
+                <label class="flex items-center gap-1.5 cursor-pointer text-gray-600 hover:text-gray-800">
+                    <input type="radio" wire:model.live="filterType" value="video" class="accent-indigo-600"> Videos
                 </label>
             </div>
-            <div>
-                <div class="flex gap-4 sm:gap-6 justify-end items-end mt-2">
-                    <details class="group relative">
-                        <summary
-                            class="flex items-center gap-2 border-b border-gray-300 pb-1 text-gray-700 transition-colors hover:border-gray-400 cursor-pointer hover:text-gray-900 [&amp;::-webkit-details-marker]:hidden ">
-                            <span class="text-sm font-medium"> Filter </span>
 
-                            <span class="transition-transform group-open:-rotate-180">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                    stroke-width="1.5" stroke="currentColor" class="size-4">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M19.5 8.25l-7.5 7.5-7.5-7.5"></path>
-                                </svg>
-                            </span>
-                        </summary>
+            <div class="flex items-center gap-2 ml-auto">
+                {{-- Bulk delete --}}
+                @if(count($selected) > 0)
+                    <button
+                        x-on:click="confirmBulkDelete()"
+                        class="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-red-700 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 transition"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                        </svg>
+                        Delete {{ count($selected) }}
+                    </button>
+                @endif
 
-                        <div
-                            class="z-auto w-64 divide-y divide-gray-300 rounded border border-gray-300 bg-white shadow-sm group-open:absolute group-open:end-0 group-open:top-8">
-                            <div class="flex items-center justify-between px-3 py-2">
-                                <span class="text-sm text-gray-700"> Filter by Type </span>
-
-                                <button type="button" wire:click="$set('filterType', '')"
-                                    class="text-sm text-gray-700 underline transition-colors hover:text-gray-900">
-                                    Reset
-                                </button>
-                            </div>
-
-                            <fieldset class="">
-                                <legend class="sr-only">File Types</legend>
-
-                                <div class="flex flex-col items-start gap-3 pl-2 py-2">
-                                    <label for="filter-image" class="inline-flex items-center gap-3">
-                                        <input type="radio" wire:model.live="filterType" value="image" class="size-5 rounded border-gray-300 shadow-sm"
-                                            id="filter-image">
-
-                                        <span class="text-sm font-medium text-gray-700"> Images </span>
-                                    </label>
-
-                                    <label for="filter-video" class="inline-flex items-center gap-3">
-                                        <input type="radio" wire:model.live="filterType" value="video" class="size-5 rounded border-gray-300 shadow-sm"
-                                            id="filter-video">
-
-                                        <span class="text-sm font-medium text-gray-700"> Videos </span>
-                                    </label>
-                                </div>
-                            </fieldset>
-                        </div>
-                    </details>
-                    <div class="group">
-                        <button wire:click="$dispatch('openMediaPicker', { multiple: true })" type="button"
-                            class="flex items-center gap-2  pb-1 text-gray-700 transition-colors hover:border-gray-400 hover:text-gray-900 cursor-pointer rounded border border-gray-300 px-4 py-2">
-                            <span class="text-sm font-medium"> Add New File</span>
-                    </div>
-                </div>
+                {{-- Upload button --}}
+                <button
+                    wire:click="$toggle('showUploadPanel')"
+                    class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0 3 3m-3-3-3 3M6.75 19.5a4.5 4.5 0 0 1-1.41-8.775 5.25 5.25 0 0 1 10.233-2.33 3 3 0 0 1 3.758 3.848A3.752 3.752 0 0 1 18 19.5H6.75Z" />
+                    </svg>
+                    Upload Files
+                </button>
             </div>
         </div>
 
-        <div class="overflow-x-auto rounded mx-4 px-2">
-            <div class="min-w-full">
+        {{-- ── Upload Panel (collapsible) ── --}}
+        <div x-show="$wire.showUploadPanel" x-transition class="border-b border-gray-200 px-5 py-4 bg-gray-50">
+            <div class="flex items-center justify-between mb-3">
+                <h3 class="text-sm font-medium text-gray-700">Upload New Files</h3>
+                <button wire:click="$set('showUploadPanel', false)" class="text-gray-400 hover:text-gray-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <div wire:ignore>
+                <input type="file" class="filepond-uploads" multiple>
+            </div>
+        </div>
 
-                {{-- <div>
-                    <button wire:click="$dispatch('openMediaPicker', { target: 'fileinput', multiple: true })">
-                        Select Featured Image
-                    </button>
+        {{-- ── Bulk action bar ── --}}
+        @if(count($selected) > 0)
+            <div class="flex items-center gap-4 px-5 py-2.5 bg-indigo-50 border-b border-indigo-100 text-sm">
+                <span class="font-medium text-indigo-800">{{ count($selected) }} file(s) selected</span>
+                <button wire:click="selectAll" class="text-indigo-600 hover:text-indigo-800 font-medium">Select all</button>
+                <button wire:click="deselectAll" class="text-gray-500 hover:text-gray-700">Deselect all</button>
+            </div>
+        @endif
 
-                    <input type="text" name="fileinput" id="fileinput" wire:model="fileinput">
-                    @if ($fileinput)
-                        @foreach ($fileinput as $item)
-                            <div class="relative inline-block m-2">
-                                <img src="{{ file_path($item) }}" class="w-32 rounded border">
-                                <button type="button" wire:click="removeMedia('fileinput', '{{ $item }}')"
-                                    class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 text-xs flex items-center justify-center">
-                                    ✕
+        {{-- ── File Grid ── --}}
+        <div class="flex-1 p-5">
+            @if($files->isEmpty())
+                {{-- Empty state --}}
+                <div class="flex flex-col items-center justify-center py-20 text-center">
+                    <div class="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-gray-400" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0 3 3m-3-3-3 3M6.75 19.5a4.5 4.5 0 0 1-1.41-8.775 5.25 5.25 0 0 1 10.233-2.33 3 3 0 0 1 3.758 3.848A3.752 3.752 0 0 1 18 19.5H6.75Z" />
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-700">
+                        {{ $search || $filterType ? 'No files match your filters' : 'No files uploaded yet' }}
+                    </h3>
+                    <p class="text-gray-400 text-sm mt-1">
+                        {{ $search || $filterType ? 'Try adjusting your search or filter.' : 'Upload your first file to get started.' }}
+                    </p>
+                    @if(!$search && !$filterType)
+                        <button
+                            wire:click="$set('showUploadPanel', true)"
+                            class="mt-4 px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition"
+                        >
+                            Upload Files
+                        </button>
+                    @else
+                        <button wire:click="$set('filterType', ''); $set('search', '')" class="mt-4 text-sm text-indigo-600 hover:text-indigo-800 font-medium">
+                            Clear filters
+                        </button>
+                    @endif
+                </div>
+            @else
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                    @foreach($files as $file)
+                        @php
+                            $isSelected = in_array($file->id, $selected);
+                            $fileUrl    = file_path($file->id);
+                        @endphp
+
+                        <div class="group relative rounded-xl border-2 overflow-hidden transition-all
+                            {{ $isSelected ? 'border-indigo-500 ring-2 ring-indigo-500 ring-offset-1' : 'border-gray-200 hover:border-gray-300 hover:shadow-md' }}">
+
+                            {{-- Checkbox --}}
+                            <div class="absolute top-2 left-2 z-10">
+                                <input
+                                    type="checkbox"
+                                    wire:click="toggleSelect({{ $file->id }})"
+                                    @checked($isSelected)
+                                    class="w-4 h-4 rounded accent-indigo-600 cursor-pointer
+                                           {{ $isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100' }} transition"
+                                >
+                            </div>
+
+                            {{-- Action buttons (hover overlay) --}}
+                            <div class="absolute top-2 right-2 z-10 flex gap-1 opacity-0 group-hover:opacity-100 transition">
+                                {{-- Preview --}}
+                                <a data-fancybox
+                                   href="{{ $fileUrl }}"
+                                   @if($file->type === 'video') data-type="video" @endif
+                                   class="w-6 h-6 rounded bg-sky-500 text-white flex items-center justify-center hover:bg-sky-600 shadow">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                                    </svg>
+                                </a>
+
+                                {{-- Download --}}
+                                <a href="{{ $fileUrl }}" download="{{ $file->name }}"
+                                   onclick="event.stopPropagation()"
+                                   class="w-6 h-6 rounded bg-violet-500 text-white flex items-center justify-center hover:bg-violet-600 shadow">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                                    </svg>
+                                </a>
+
+                                {{-- Copy URL --}}
+                                <button
+                                    type="button"
+                                    onclick="navigator.clipboard.writeText('{{ $fileUrl }}').then(() => { Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'URL copied!', showConfirmButton: false, timer: 2000, timerProgressBar: true }); }); event.stopPropagation();"
+                                    class="w-6 h-6 rounded bg-emerald-500 text-white flex items-center justify-center hover:bg-emerald-600 shadow"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.666 3.888A2.25 2.25 0 0 0 13.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 0 1-.75.75H9a.75.75 0 0 1-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 0 1-2.25 2.25H6.75A2.25 2.25 0 0 1 4.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 0 1 1.927-.184" />
+                                    </svg>
+                                </button>
+
+                                {{-- Delete --}}
+                                <button
+                                    type="button"
+                                    x-on:click.stop="confirmDelete({{ $file->id }})"
+                                    class="w-6 h-6 rounded bg-red-500 text-white flex items-center justify-center hover:bg-red-600 shadow"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                                    </svg>
                                 </button>
                             </div>
-                        @endforeach
 
-                    @endif
-                </div> --}}
-                <div class="grid grid-cols-5 gap-4 overflow-y-auto">
-                    @foreach ($images as $image_file)
-                        <!-- example item -->
+                            {{-- Media preview --}}
+                            <div class="aspect-square bg-gray-100 overflow-hidden cursor-pointer"
+                                 wire:click="toggleSelect({{ $file->id }})">
+                                @if($file->type === 'video')
+                                    <div class="relative w-full h-full flex items-center justify-center">
+                                        <video class="w-full h-full object-cover" preload="metadata">
+                                            <source src="{{ $fileUrl }}">
+                                        </video>
+                                        <div class="absolute inset-0 flex items-center justify-center bg-black/20 pointer-events-none">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-white drop-shadow-lg" viewBox="0 0 24 24" fill="currentColor">
+                                                <path fill-rule="evenodd" d="M4.5 5.653c0-1.427 1.529-2.33 2.779-1.643l11.54 6.347c1.295.712 1.295 2.573 0 3.286L7.28 19.99c-1.25.687-2.779-.217-2.779-1.643V5.653Z" clip-rule="evenodd" />
+                                            </svg>
+                                        </div>
+                                    </div>
+                                @else
+                                    <img
+                                        src="{{ $fileUrl }}"
+                                        alt="{{ $file->name }}"
+                                        class="w-full h-full object-cover"
+                                        loading="lazy"
+                                    >
+                                @endif
+                            </div>
 
-                        <div
-                            class="block relative rounded-lg p-2 shadow-sm border border-gray-200  hover:shadow-lg transition-shadow {{ in_array($image_file->id, $selected) ? 'bg-indigo-400' : '' }}">
-                            <img alt=""
-                                src="{{ asset('storage/' . $image_file->items->where('type', 'original')->first()->path) }}"
-                                class="h-36 w-full rounded-md object-contain">
-
-                            {{-- <div class="mt-6">
-                                                <dl>
-                                                    <div class="flex">
-                                                        <div class="flex">
-                                                            <dt class="text-sm text-gray-500">SL- </dt>
-
-                                                            <dd class="text-sm text-gray-500">5</dd>
-                                                        </div>
-                                                        <span class="text-gray-400 px-2">|</span>
-                                                        <div>
-                                                            <dt class="sr-only">ID: </dt>
-
-                                                            <dd class="text-sm text-gray-500"># 12</dd>
-                                                        </div>
-                                                    </div>
-
-
-                                                    <div>
-                                                        <dt class="sr-only">Name:</dt>
-
-                                                        <dd class="font-medium">filename</dd>
-                                                    </div>
-                                                </dl>
-
-                                                <div class="mt-6 flex items-center gap-8 text-xs">
-                                                    <div class="sm:inline-flex sm:shrink-0 sm:items-center sm:gap-2">
-
-
-                                                        <div class="mt-1.5 sm:mt-0">
-                                                            <p class="text-gray-500">Quantity</p>
-
-                                                            <p class="font-medium">
-                                                                file name
-                                                        </div>
-                                                    </div>
-
-
-
-                                                    <div class="sm:inline-flex sm:shrink-0 sm:items-center sm:gap-2">
-
-
-                                                        <div class="mt-1.5 sm:mt-0">
-                                                            <p class="text-gray-500">Per Unit</p>
-                                                            <p class="font-medium">
-                                                                300kg
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                    <div class="sm:inline-flex sm:shrink-0 sm:items-center sm:gap-2">
-
-
-                                                        <div class="mt-1.5 sm:mt-0">
-                                                            <p class="text-gray-500">Price Per kg</p>
-
-                                                            <p class="font-medium">55 Tk</p>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div> --}}
-                            <div class="absolute top-5 right-5 left-5 flex items-center gap-2 justify-between">
-                                <span class="shadow text-gray-700 text-sm bg-red-50/50 rounded px-2">
-                                 <input type="checkbox" name="selected[]" value="{{ $image_file->id }}" id="selected-{{ $image_file->id }}" wire:click="selectImage({{ $image_file->id }})"  >
-                                </span>
-                                <div class="flex gap-2">
-                                    <a data-fancybox href="{{file_path($image_file->id)}}" alt="View Product"
-                                        class="cursor-pointer rounded-md shadow-lg bg-sky-100 px-1 py-1 text-sky-700 dark:bg-sky-700 dark:text-sky-100">
-
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                            stroke-width="1.5" stroke="currentColor" class="size-4">
-                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
-                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                                        </svg>
-
-
-
-                                    </a>
-                                    <button type="button" 
-                                        onclick="navigator.clipboard.writeText('{{ file_path($image_file->id) }}').then(() => { 
-                                            // Simple feedback - you could use a toast notification here
-                                                  Toast.fire({
-                                                    icon: 'success',
-                                                    title: 'URL copied to clipboard'
-                                                  });
-        
-                                        })" 
-                                        alt="Copy URL"
-                                        class="cursor-pointer rounded-md shadow-lg bg-green-100 px-1 py-1 text-green-700 dark:bg-green-700 dark:text-green-100">
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                            stroke-width="1.5" stroke="currentColor" class="size-4">
-                                            <path stroke-linecap="round" stroke-linejoin="round" 
-                                                d="M8.25 7.5V6.108c0-1.135.845-2.098 1.976-2.192.373-.03.748-.057 1.123-.08M15.75 18H18a2.25 2.25 0 0 0 2.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 0 0-1.123-.08M15.75 18.75v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5A3.75 3.75 0 0 0 6.375 7.5H5.25m11.9-3.664A2.251 2.251 0 0 0 15 2.25h-1.5a2.251 2.251 0 0 0-2.15 1.586m5.8 0c.065.21.1.433.1.664v.75h-6V4.5c0-.231.035-.454.1-.664M6.75 7.5H4.875c-.621 0-1.125.504-1.125 1.125v12c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V16.5a9 9 0 0 0-9-9Z" />
-                                        </svg>
-                                    </button>
-                                    <span x-data
-                                        @click="
-                                                Swal.fire({
-                                                    title: 'Are you sure?',
-                                                    text: 'This record will be permanently deleted!',
-                                                    icon: 'warning',
-                                                    showCancelButton: true,
-                                                    confirmButtonColor: '#d33',
-                                                    confirmButtonText: 'Yes, delete file!'
-                                                }).then((result) => {
-                                                    if (result.isConfirmed) {
-                                                        $wire.delete({{ $image_file->id }})
-                                                    }
-                                                })
-                                            "
-                                        alt="Delete"
-                                        class="cursor-pointer rounded-md shadow-lg bg-red-100 px-1 py-1 text-red-700 dark:bg-red-700 dark:text-red-100">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none"
-                                            viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
-                                        </svg>
-
-
+                            {{-- File info footer --}}
+                            <div class="px-2 py-2 bg-white border-t border-gray-100">
+                                <p class="text-xs font-medium text-gray-700 truncate" title="{{ $file->name }}">
+                                    {{ $file->name }}
+                                </p>
+                                <div class="flex items-center gap-1.5 mt-0.5">
+                                    <span class="text-[10px] px-1.5 py-0.5 rounded-full font-medium
+                                        {{ $file->type === 'video' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700' }}">
+                                        {{ strtoupper($file->extension ?? $file->type ?? 'file') }}
+                                    </span>
+                                    <span class="text-[10px] text-gray-400">
+                                        {{ $file->created_at->diffForHumans() }}
                                     </span>
                                 </div>
                             </div>
                         </div>
                     @endforeach
-
                 </div>
-                <div>
-                    {{ $images->links() }}
-                </div>
-            </div>
 
+                <div class="mt-6">
+                    {{ $files->links() }}
+                </div>
+            @endif
         </div>
 
-        {{-- =========================== Content End Here ============================ --}}
-        @livewire('admin.file.media-picker', ['mediapickerModal' => false])
     </div>
-
 </div>
-{{-- =========================== Page Layout End Here ============================ --}}
 
 @push('scripts')
 <script>
-    addEventListener("DOMContentLoaded", () => {
-        Fancybox.bind("[data-fancybox]", {
-  
-});
-    })
+    function uploadsPage() {
+        return {
+            pond: null,
 
-    </script>
+            init() {
+                this.$watch('$wire.showUploadPanel', (val) => {
+                    if (val) this.$nextTick(() => this.initPond());
+                    else if (this.pond) {
+                        this.pond.destroy();
+                        this.pond = null;
+                    }
+                });
+            },
+
+            initPond() {
+                if (this.pond) return;
+                const input = document.querySelector('.filepond-uploads');
+                if (!input) return;
+                this.pond = FilePond.create(input, {
+                    allowMultiple: true,
+                    imagePreviewMaxHeight: 150,
+                    server: {
+                        process: {
+                            url: '/admin/upload',
+                            method: 'POST',
+                            headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                        },
+                        revert: {
+                            url: '/admin/upload/revert',
+                            method: 'DELETE',
+                            headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                        },
+                    },
+                    onprocessfile: (error) => {
+                        if (!error) Livewire.dispatch('fileUploaded');
+                    },
+                });
+            },
+
+            confirmDelete(id) {
+                Swal.fire({
+                    title: 'Delete this file?',
+                    text: 'This action cannot be undone.',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#ef4444',
+                    confirmButtonText: 'Yes, delete',
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        this.$wire.delete(id);
+                    }
+                });
+            },
+
+            confirmBulkDelete() {
+                const count = this.$wire.selected.length;
+                Swal.fire({
+                    title: `Delete ${count} file(s)?`,
+                    text: 'This action cannot be undone.',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#ef4444',
+                    confirmButtonText: 'Yes, delete all',
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        this.$wire.deleteSelected();
+                    }
+                });
+            },
+        };
+    }
+
+    addEventListener('DOMContentLoaded', () => {
+        Fancybox.bind('[data-fancybox]', {});
+    });
+</script>
 @endpush

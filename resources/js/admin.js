@@ -150,6 +150,48 @@ import "flatpickr/dist/flatpickr.min.css";
 
 window.flatpickr = flatpickr;
 
+window.initFlatpickr = () => {
+    document.querySelectorAll(".flatpickr-only-date").forEach((el) => {
+        if (el._flatpickr) el._flatpickr.destroy();
+        flatpickr(el, {
+            enableTime: false,
+            dateFormat: "Y-m-d",
+            defaultDate: el.value || null,
+            onChange: function () {
+                el.dispatchEvent(new Event("input", { bubbles: true }));
+            },
+        });
+    });
+
+    document.querySelectorAll(".flatpickr").forEach((el) => {
+        if (el._flatpickr) el._flatpickr.destroy();
+        let defaultDate = el.value;
+        if (defaultDate && defaultDate.length === 10) {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, "0");
+            const minutes = String(now.getMinutes()).padStart(2, "0");
+            defaultDate += ` ${hours}:${minutes}`;
+        }
+        flatpickr(el, {
+            enableTime: true,
+            time_24hr: true,
+            dateFormat: "Y-m-d H:i:S",
+            enableSeconds: true,
+            defaultDate: defaultDate || new Date(),
+            minuteIncrement: 1,
+            onChange: function () {
+                el.dispatchEvent(new Event("input", { bubbles: true }));
+            },
+        });
+    });
+};
+
+document.addEventListener("DOMContentLoaded", () => window.initFlatpickr());
+document.addEventListener("livewire:navigated", () => window.initFlatpickr());
+document.addEventListener("livewire:initialized", () => {
+    Livewire.hook("morph.updated", () => window.initFlatpickr());
+});
+
 //FlatPickr==================================================END
 //--    ====================================================
 //Sortable==================================================START
@@ -164,11 +206,41 @@ window.Sortable = Sortable;
 
 //Boxicons==================================================END
 // fancybox==================================================START
-
 import { Fancybox } from "@fancyapps/ui";
 import "@fancyapps/ui/dist/fancybox/fancybox.css";
 
 window.Fancybox = Fancybox;
+
+// Bind once — Fancybox uses event delegation on document so dynamic elements work automatically.
+// Do NOT re-bind on Livewire morphs; it would stack duplicate listeners.
+document.addEventListener("DOMContentLoaded", () => {
+    Fancybox.bind("[data-fancybox]", {
+        groupAll: false,
+        Toolbar: {
+            display: {
+                left:   ["infobar"],
+                middle: [],
+                right:  ["download", "close"],
+            },
+        },
+    });
+});
+
+// Track open state so Escape / clicks don't bubble to parent Alpine modals
+if (Fancybox.defaults) {
+    Fancybox.defaults.on = {
+        open:    () => { window._fancyboxOpen = true; },
+        destroy: () => { setTimeout(() => { window._fancyboxOpen = false; }, 50); },
+    };
+}
+
+document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && window._fancyboxOpen) e.stopImmediatePropagation();
+}, true);
+
+document.addEventListener("click", (e) => {
+    if (window._fancyboxOpen && e.target.closest(".fancybox__container")) e.stopPropagation();
+}, true);
 // fancybox==================================================END
 
 // ChartJs==================================================START

@@ -19,6 +19,8 @@ Route::get('/permissions/role/edit/{id}', App\Livewire\Admin\Permissions\RoleEdi
 
 // System Settings
 Route::get('/system-settings', App\Livewire\Admin\SystemSettings\SystemSettings::class)->name('system-settings');
+Route::get('/system-settings/countries', App\Livewire\Admin\Settings\Countries::class)->name('settings.countries');
+Route::get('/system-settings/genders',   App\Livewire\Admin\Settings\Genders::class)->name('settings.genders');
 
 // Activity Log
 Route::get('/activity-log', App\Livewire\Admin\ActivityLog\ActivityLog::class)->name('activity-log');

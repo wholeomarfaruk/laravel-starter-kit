@@ -32,18 +32,12 @@ trait WithMediaPicker
         if (is_array($current) && $id !== null) {
             $this->$field = array_values(array_filter(
                 $current,
-                function ($item, $key) use ($id) {
-                    if ($key === (int) $id) {
-                        return false;
-                    }
-
+                function ($item) use ($id) {
                     if (is_array($item)) {
                         return ($item['id'] ?? $item['path'] ?? null) != $id;
                     }
-
                     return $item != $id;
-                },
-                ARRAY_FILTER_USE_BOTH
+                }
             ));
         } else {
             $this->$field = null;
