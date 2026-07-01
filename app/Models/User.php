@@ -100,6 +100,10 @@ class User extends Authenticatable
 
     public function hasPanel(string $panelSlug): bool
     {
+        if ($this->hasRole('superadmin')) {
+            return true;
+        }
+
         return $this->panels()->where('slug', $panelSlug)->exists();
     }
     //roleName

@@ -19,11 +19,23 @@ class Genders extends Component
 
     public function toggleActive(int $id): void
     {
-        $gender = Gender::findOrFail($id);
-        $gender->update(['is_active' => ! $gender->is_active]);
+        $gender    = Gender::findOrFail($id);
+        $newStatus = ! $gender->is_active;
+        $gender->update(['is_active' => $newStatus]);
+
+        activity('settings')
+            ->causedBy(auth()->user())
+            ->performedOn($gender)
+            ->withProperties([
+                'old'        => ['is_active' => ! $newStatus],
+                'attributes' => ['is_active' => $newStatus],
+            ])
+            ->event('updated')
+            ->log("Gender \"{$gender->name}\" was " . ($newStatus ? 'enabled' : 'disabled'));
+
         $this->dispatch('toast', [
             'type'    => 'success',
-            'message' => $gender->name . ' ' . ($gender->is_active ? 'enabled' : 'disabled'),
+            'message' => $gender->name . ' ' . ($newStatus ? 'enabled' : 'disabled'),
         ]);
     }
 
@@ -36,12 +48,19 @@ class Genders extends Component
 
         $maxOrder = Gender::max('sort_order') ?? 0;
 
-        Gender::create([
+        $gender = Gender::create([
             'name'       => $this->newName,
             'slug'       => $this->newSlug,
             'is_active'  => true,
             'sort_order' => $maxOrder + 1,
         ]);
+
+        activity('settings')
+            ->causedBy(auth()->user())
+            ->performedOn($gender)
+            ->withProperties(['name' => $gender->name, 'slug' => $gender->slug])
+            ->event('created')
+            ->log("Gender \"{$gender->name}\" was added");
 
         $this->reset(['newName', 'newSlug', 'createModal']);
         $this->dispatch('toast', ['type' => 'success', 'message' => 'Gender added successfully']);
@@ -49,7 +68,17 @@ class Genders extends Component
 
     public function deleteGender(int $id): void
     {
-        Gender::findOrFail($id)->delete();
+        $gender = Gender::findOrFail($id);
+        $name   = $gender->name;
+
+        $gender->delete();
+
+        activity('settings')
+            ->causedBy(auth()->user())
+            ->withProperties(['name' => $name])
+            ->event('deleted')
+            ->log("Gender \"{$name}\" was deleted");
+
         $this->dispatch('toast', ['type' => 'success', 'message' => 'Gender deleted']);
     }
 

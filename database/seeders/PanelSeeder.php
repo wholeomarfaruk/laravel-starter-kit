@@ -2,22 +2,44 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class PanelSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        \App\Models\Panel::insert([
+        $panels = [
             [
-                'id' => 1,
-                'name' => 'Admin',
-                'slug' => 'admin',
-            ]
-        ]);
+                'id'          => 1,
+                'name'        => 'Admin Panel',
+                'slug'        => 'admin',
+                'description' => 'Full access to the admin dashboard and management tools.',
+                'route_name'  => 'admin.dashboard',
+                'is_active'   => true,
+                'sort_order'  => 1,
+            ],
+            [
+                'id'          => 2,
+                'name'        => 'User Panel',
+                'slug'        => 'user',
+                'description' => 'Personal dashboard for registered users.',
+                'route_name'  => 'dashboard',
+                'is_active'   => true,
+                'sort_order'  => 2,
+            ],
+            [
+                'id'          => 3,
+                'name'        => 'Website',
+                'slug'        => 'website',
+                'description' => 'Public website — no login required.',
+                'route_name'  => 'home',
+                'is_active'   => true,
+                'sort_order'  => 3,
+            ],
+        ];
+
+        foreach ($panels as $panel) {
+            \App\Models\Panel::updateOrCreate(['id' => $panel['id']], $panel);
+        }
     }
 }

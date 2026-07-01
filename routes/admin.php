@@ -15,7 +15,8 @@ Route::get('/settings', App\Livewire\Admin\Settings\Settings::class)->name('sett
 //permissions
 Route::get('/permissions/roles', App\Livewire\Admin\Permissions\RoleList::class)->name('roles.list');
 Route::get('/permissions/role/create', App\Livewire\Admin\Permissions\RoleCreate::class)->name('roles.create');
-Route::get('/permissions/role/edit/{id}', App\Livewire\Admin\Permissions\RoleEdit::class)->name('roles.edit');
+Route::get('/permissions/role/edit/{id}', App\Livewire\Admin\Permissions\RoleCreate::class)->name('roles.edit');
+Route::get('/permissions/panels', App\Livewire\Admin\Permissions\PanelList::class)->name('permissions.panels');
 
 // System Settings
 Route::get('/system-settings', App\Livewire\Admin\SystemSettings\SystemSettings::class)->name('system-settings');

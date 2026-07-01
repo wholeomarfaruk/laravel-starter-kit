@@ -4,44 +4,91 @@ namespace App\Livewire\Admin\Permissions;
 
 use App\Services\RoleService;
 use Livewire\Component;
+use Spatie\Permission\Models\Permission;
 
 class RoleCreate extends Component
 {
-    public $permissionsGrouped;
-    public $name;
-    public $permissions = [];
-    public $allPermissions;
-    public $selectAll = false;
+    public int    $roleId      = 0;
+    public string $name        = '';
+    public array  $permissions = [];
+    public bool   $selectAll   = false;
 
-    public function mount(RoleService $roleService)
+    public function mount(int $id = 0, RoleService $roleService): void
     {
-        if (! auth()->user()->can('role.create')) {
-            abort(403, 'Unauthorized action.');
-        }
+        if ($id > 0) {
+            if (! auth()->user()->can('role.edit')) {
+                abort(403, 'Unauthorized action.');
+            }
 
-        [$grouped, $all] = $roleService->allPermissionsGrouped();
-        $this->permissionsGrouped = $grouped;
-        $this->allPermissions     = $all;
+            $role = $roleService->find($id);
+
+            if (! $role) {
+                abort(404);
+            }
+
+            $this->roleId      = $role->id;
+            $this->name        = $role->name;
+            $this->permissions = $role->permissions->pluck('name')->toArray();
+            $this->selectAll   = count($this->permissions) === Permission::count();
+        } else {
+            if (! auth()->user()->can('role.create')) {
+                abort(403, 'Unauthorized action.');
+            }
+        }
     }
 
-    public function updatedSelectAll()
+    public function updatedSelectAll(): void
     {
         $this->permissions = $this->selectAll
-            ? $this->allPermissions->pluck('name')->toArray()
+            ? Permission::pluck('name')->toArray()
             : [];
     }
 
-    public function render()
+    public function toggleModule(array $modulePermissions): void
     {
-        return view('livewire.admin.permissions.role-create')->layout('layouts.admin.admin');
+        $allSelected = count(array_intersect($modulePermissions, $this->permissions)) === count($modulePermissions);
+
+        $this->permissions = $allSelected
+            ? array_values(array_diff($this->permissions, $modulePermissions))
+            : array_values(array_unique(array_merge($this->permissions, $modulePermissions)));
+
+        $this->selectAll = count($this->permissions) === Permission::count();
+    }
+
+    public function updatedPermissions(): void
+    {
+        $this->selectAll = count($this->permissions) === Permission::count();
     }
 
     public function save(RoleService $roleService)
     {
-        $this->validate(['name' => 'required|unique:roles,name']);
+        if ($this->roleId > 0) {
+            $this->validate(['name' => 'required|string|unique:roles,name,' . $this->roleId]);
+
+            $role = $roleService->find($this->roleId);
+
+            if (! $role) {
+                abort(404);
+            }
+
+            $roleService->update($role, $this->name, $this->permissions);
+
+            return redirect()->route('admin.roles.list')->with('success', 'Role updated successfully.');
+        }
+
+        $this->validate(['name' => 'required|string|unique:roles,name']);
 
         $roleService->create($this->name, $this->permissions);
 
         return redirect()->route('admin.roles.list')->with('success', 'Role created successfully.');
+    }
+
+    public function render(RoleService $roleService)
+    {
+        [$grouped] = $roleService->allPermissionsGrouped();
+
+        return view('livewire.admin.permissions.role-create', [
+            'permissionsGrouped' => $grouped,
+        ])->layout('layouts.admin.admin');
     }
 }

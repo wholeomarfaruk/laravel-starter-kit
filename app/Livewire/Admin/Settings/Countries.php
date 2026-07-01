@@ -29,21 +29,45 @@ class Countries extends Component
 
     public function toggleRegisterAllowed(int $id): void
     {
-        $country = Country::findOrFail($id);
-        $country->update(['is_register_allowed' => ! $country->is_register_allowed]);
+        $country   = Country::findOrFail($id);
+        $newStatus = ! $country->is_register_allowed;
+        $country->update(['is_register_allowed' => $newStatus]);
+
+        activity('settings')
+            ->causedBy(auth()->user())
+            ->performedOn($country)
+            ->withProperties([
+                'old'        => ['is_register_allowed' => ! $newStatus],
+                'attributes' => ['is_register_allowed' => $newStatus],
+            ])
+            ->event('updated')
+            ->log("Country \"{$country->name}\" registration " . ($newStatus ? 'enabled' : 'disabled'));
+
         $this->dispatch('toast', [
             'type'    => 'success',
-            'message' => $country->name . ' registration ' . ($country->is_register_allowed ? 'enabled' : 'disabled'),
+            'message' => $country->name . ' registration ' . ($newStatus ? 'enabled' : 'disabled'),
         ]);
     }
 
     public function toggleActive(int $id): void
     {
-        $country = Country::findOrFail($id);
-        $country->update(['is_active' => ! $country->is_active]);
+        $country   = Country::findOrFail($id);
+        $newStatus = ! $country->is_active;
+        $country->update(['is_active' => $newStatus]);
+
+        activity('settings')
+            ->causedBy(auth()->user())
+            ->performedOn($country)
+            ->withProperties([
+                'old'        => ['is_active' => ! $newStatus],
+                'attributes' => ['is_active' => $newStatus],
+            ])
+            ->event('updated')
+            ->log("Country \"{$country->name}\" was " . ($newStatus ? 'activated' : 'deactivated'));
+
         $this->dispatch('toast', [
             'type'    => 'success',
-            'message' => $country->name . ' ' . ($country->is_active ? 'activated' : 'deactivated'),
+            'message' => $country->name . ' ' . ($newStatus ? 'activated' : 'deactivated'),
         ]);
     }
 
@@ -57,7 +81,7 @@ class Countries extends Component
             'newEmojiFlag'    => 'nullable|string|max:10',
         ]);
 
-        Country::create([
+        $country = Country::create([
             'name'                => $this->newName,
             'code'                => strtoupper($this->newCode),
             'phone_code'          => $this->newPhoneCode,
@@ -67,13 +91,35 @@ class Countries extends Component
             'is_active'           => true,
         ]);
 
+        activity('settings')
+            ->causedBy(auth()->user())
+            ->performedOn($country)
+            ->withProperties([
+                'name'        => $country->name,
+                'code'        => $country->code,
+                'phone_code'  => $country->phone_code,
+            ])
+            ->event('created')
+            ->log("Country \"{$country->name}\" ({$country->code}) was added");
+
         $this->reset(['newName', 'newCode', 'newPhoneCode', 'newCurrencyCode', 'newEmojiFlag', 'createModal']);
         $this->dispatch('toast', ['type' => 'success', 'message' => 'Country added successfully']);
     }
 
     public function deleteCountry(int $id): void
     {
-        Country::findOrFail($id)->delete();
+        $country = Country::findOrFail($id);
+        $name    = $country->name;
+        $code    = $country->code;
+
+        $country->delete();
+
+        activity('settings')
+            ->causedBy(auth()->user())
+            ->withProperties(['name' => $name, 'code' => $code])
+            ->event('deleted')
+            ->log("Country \"{$name}\" ({$code}) was deleted");
+
         $this->dispatch('toast', ['type' => 'success', 'message' => 'Country deleted']);
     }
 

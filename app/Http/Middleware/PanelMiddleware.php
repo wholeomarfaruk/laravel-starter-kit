@@ -16,10 +16,12 @@ class PanelMiddleware
     public function handle(Request $request, Closure $next, string $panel): Response
     {
 
-        // Check if user is logged in AND has access to panel
-        if (!auth()->check() || !auth()->user()->hasPanel($panel) || !auth()->user()->roleName()) {
-            // Option: Redirect to a specific page or show 403
-            abort(403, "Access Denied: You do not have the {$panel} panel permissions.");
+        if (! auth()->check()) {
+            return redirect()->route('login');
+        }
+
+        if (! auth()->user()->hasPanel($panel)) {
+            abort(403, "Access Denied: You do not have {$panel} panel access to this panel.");
         }
 
         return $next($request);

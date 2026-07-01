@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin\Permissions;
 
+use App\Services\RoleService;
 use Livewire\Component;
 use Spatie\Permission\Models\Role;
 
@@ -49,20 +50,22 @@ class RoleList extends Component
         // $this->reset(['roleId','viewRole']); // Reset form fields
 
     }
-    public function deleteRole($id)
+    public function deleteRole(int $id, RoleService $roleService): void
     {
-     if(!auth()->user()->can('role.delete')) {
-            return abort(403, 'Unauthorized action.');
+        if (! auth()->user()->can('role.delete')) {
+            abort(403, 'Unauthorized action.');
         }
+
         $role = Role::find($id);
-        if (!$role) {
-            session()->flash('error', 'Role not found.');
+
+        if (! $role) {
+            $this->dispatch('toast', type: 'error', message: 'Role not found.');
             return;
         }
-        $role->permissions()->detach();
-        $role->delete();
-        session()->flash('success', 'Role deleted successfully.');
-        $this->render(); // Refresh the roles list
+
+        $roleService->delete($role);
+
+        $this->dispatch('toast', type: 'success', message: 'Role deleted successfully.');
     }
 
 }

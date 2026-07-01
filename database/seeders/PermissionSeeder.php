@@ -51,6 +51,9 @@ class PermissionSeeder extends Seeder
             //panel
             ['id' => 17, 'name' => 'panel.show'],
             ['id' => 18, 'name' => 'panel.view'],
+            ['id' => 23, 'name' => 'panel.create'],
+            ['id' => 24, 'name' => 'panel.edit'],
+            ['id' => 25, 'name' => 'panel.delete'],
 
             //dashboard
             ['id' => 19, 'name' => 'dashboard.readonly'],

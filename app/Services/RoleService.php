@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use Illuminate\Support\Facades\Auth;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
@@ -36,19 +37,51 @@ class RoleService
     {
         $role = Role::create(['name' => $name]);
         $role->syncPermissions($permissions);
+
+        activity('permissions')
+            ->causedBy(Auth::user())
+            ->performedOn($role)
+            ->withProperties(['permissions' => $permissions])
+            ->event('created')
+            ->log("Role \"{$name}\" was created with " . count($permissions) . ' permission(s)');
+
         return $role;
     }
 
     public function update(Role $role, string $name, array $permissions): Role
     {
+        $oldName        = $role->name;
+        $oldPermissions = $role->permissions->pluck('name')->sort()->values()->toArray();
+        $newPermissions = collect($permissions)->sort()->values()->toArray();
+
         $role->name = $name;
         $role->save();
         $role->syncPermissions($permissions);
+
+        activity('permissions')
+            ->causedBy(Auth::user())
+            ->performedOn($role)
+            ->withProperties([
+                'old'        => ['name' => $oldName,  'permissions' => $oldPermissions],
+                'attributes' => ['name' => $name,     'permissions' => $newPermissions],
+            ])
+            ->event('updated')
+            ->log("Role \"{$name}\" was updated");
+
         return $role;
     }
 
     public function delete(Role $role): void
     {
+        $name        = $role->name;
+        $permissions = $role->permissions->pluck('name')->toArray();
+
+        activity('permissions')
+            ->causedBy(Auth::user())
+            ->withProperties(['name' => $name, 'permissions' => $permissions])
+            ->event('deleted')
+            ->log("Role \"{$name}\" was deleted");
+
         $role->permissions()->detach();
         $role->delete();
     }

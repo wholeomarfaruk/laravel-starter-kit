@@ -46,7 +46,7 @@
         <div class="px-4 space-y-2">
 
             <!-- SideBar Toggle -->
-            <button @click="$store.sidebar.full = !$store.sidebar.full"
+            <button @click="$store.sidebar.full = !$store.sidebar.full; localStorage.setItem('sidebar_full', $store.sidebar.full)"
                 class="hidden sm:block focus:outline-none absolute p-1 -right-3 top-10 bg-gray-900 rounded-full shadow-md cursor-pointer">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-all duration-300 text-white transform"
                     x-bind:class="$store.sidebar.full ? 'rotate-90' : '-rotate-90 '" viewBox="0 0 20 20"
@@ -244,15 +244,15 @@
                         Transections</h1>
                 </a> --}}
                 <!-- User Management -->
-                <div x-data="dropdown" class="relative">
+                @php $usersActive = Route::currentRouteName() === 'admin.users'; @endphp
+                <div x-data="dropdown" x-init="open = {{ $usersActive ? 'true' : 'false' }} && $store.sidebar.full" class="relative">
                     <div @click="toggle('users')" x-data="tooltip" @mouseover="show = true"
                         @mouseleave="show = false"
-                        class="flex justify-between text-gray-400 hover:text-gray-200 hover:bg-gray-800 items-center space-x-2 rounded-md p-2 cursor-pointer"
+                        class="flex justify-between text-gray-400 hover:text-gray-200 hover:bg-gray-800 items-center space-x-2 rounded-md p-2 cursor-pointer
+                        {{ $usersActive ? 'text-gray-200 bg-gray-800' : '' }}"
                         :class="{
                             'justify-start': $store.sidebar.full,
-                            'sm:justify-center': !$store.sidebar.full,
-                            'text-gray-200 bg-gray-800': $store.sidebar.active == 'Reports',
-                            'text-gray-400': $store.sidebar.active != 'Reports'
+                            'sm:justify-center': !$store.sidebar.full
                         }">
                         <div class="relative flex items-center gap-2">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
@@ -288,18 +288,49 @@
                         x-transition>Settings</h2>
                 </div>
 
-                <!-- Role and permissions -->
-                <a href="{{ route('admin.roles.list') }}" x-data="tooltip" x-on:mouseover="show = true"
-                    x-on:mouseleave="show = false"
-                    class="relative flex items-center hover:text-gray-200 hover:bg-gray-800 space-x-2 rounded-md p-2 cursor-pointer justify-start text-gray-400
-                    {{ in_array(Route::currentRouteName(), ['admin.roles.list', 'admin.roles.create', 'admin.roles.edit']) ? 'text-gray-200 bg-gray-800' : '' }}
-                    ">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285Z" />
-                    </svg>
-                    <h1 x-cloak x-bind:class="!$store.sidebar.full && show ? visibleClass : '' || !$store.sidebar.full ? 'sm:hidden' : ''">
-                        Permissions</h1>
-                </a>
+                <!-- Permissions Dropdown -->
+                @php
+                    $permissionsActive = in_array(Route::currentRouteName(), [
+                        'admin.roles.list', 'admin.roles.create', 'admin.roles.edit', 'admin.permissions.panels'
+                    ]);
+                @endphp
+                <div x-data="dropdown" x-init="open = {{ $permissionsActive ? 'true' : 'false' }} && $store.sidebar.full" class="relative">
+                    <div @click="toggle('permissions')" x-data="tooltip" @mouseover="show = true"
+                        @mouseleave="show = false"
+                        class="flex justify-between text-gray-400 hover:text-gray-200 hover:bg-gray-800 items-center space-x-2 rounded-md p-2 cursor-pointer
+                        {{ $permissionsActive ? 'text-gray-200 bg-gray-800' : '' }}"
+                        :class="{
+                            'justify-start': $store.sidebar.full,
+                            'sm:justify-center': !$store.sidebar.full
+                        }">
+                        <div class="relative flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285Z" />
+                            </svg>
+                            <h1 x-cloak :class="!$store.sidebar.full ? (show ? visibleClass : 'sm:hidden') : ''">
+                                Permissions
+                            </h1>
+                        </div>
+                        <svg x-cloak :class="$store.sidebar.full ? '' : 'sm:hidden'" xmlns="http://www.w3.org/2000/svg"
+                            class="h-4 w-4 size-6" viewBox="0 0 20 20" stroke-width="1.5" fill="currentColor">
+                            <path fill-rule="evenodd"
+                                d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                clip-rule="evenodd" />
+                        </svg>
+                    </div>
+
+                    <div x-cloak x-show="open" @click.outside="open=false"
+                        :class="$store.sidebar.full ? expandedClass : shrinkedClass" class="text-gray-400 space-y-3">
+                        <a href="{{ route('admin.roles.list') }}"
+                            class="block hover:text-gray-200 cursor-pointer {{ in_array(Route::currentRouteName(), ['admin.roles.list', 'admin.roles.create', 'admin.roles.edit']) ? 'text-gray-200' : '' }}">
+                            Roles
+                        </a>
+                        <a href="{{ route('admin.permissions.panels') }}"
+                            class="block hover:text-gray-200 cursor-pointer {{ Route::currentRouteName() === 'admin.permissions.panels' ? 'text-gray-200' : '' }}">
+                            Panels
+                        </a>
+                    </div>
+                </div>
 
                 <!-- Activity Log -->
                 <a href="{{ route('admin.activity-log') }}" x-data="tooltip" x-on:mouseover="show = true"
@@ -440,7 +471,7 @@
         </div>
         <div>
 
-            <hr class="border-gray-700 mt-4">
+            <hr class="border-gray-700">
             <!-- Profile / Dropup -->
 <div x-data="{ openProfile: false }" class="relative px-2 py-2">
     <div @click="openProfile = !openProfile"
@@ -502,31 +533,13 @@
     </div>
 </div>
 
-            <!-- logout -->
-            <div x-data="tooltip" @click="$refs.logoutForm.submit()" @mouseover="show = true"
-                @mouseleave="show = false"
-                class="relative flex justify-between items-center text-gray-400 hover:text-gray-200 hover:bg-gray-800 space-x-2 rounded-md p-2 cursor-pointer"
-                :class="{
-                    'justify-start': $store.sidebar.full,
-                    'sm:justify-center': !$store.sidebar.full,
-                    'text-gray-200 bg-gray-800': $store.sidebar.active == 'logout',
-                    'text-gray-400': $store.sidebar.active != 'logout'
-                }">
-                <div class="flex items-center space-x-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                    </svg>
-
-                    <span x-cloak :class="!$store.sidebar.full ? (show ? visibleClass : 'sm:hidden') : ''">
-                        Logout
-                    </span>
-                </div>
-
-                <form x-ref="logoutForm" action="{{ route('logout') }}" method="POST" class="hidden">
-                    @csrf
-                </form>
+            <!-- Version -->
+            <div class="px-4 py-3 flex items-center gap-2"
+                :class="$store.sidebar.full ? 'justify-between' : 'sm:justify-center'">
+                <span x-cloak x-show="$store.sidebar.full" class="text-xs text-gray-600">
+                    {{ config('app.name') }}
+                </span>
+                <span class="text-xs font-mono text-gray-600">v{{ config('app.version') }}</span>
             </div>
 
 
@@ -550,7 +563,7 @@
         document.addEventListener('alpine:init', () => {
             // Stores variable globally
             Alpine.store('sidebar', {
-                full: false,
+                full: localStorage.getItem('sidebar_full') === 'true',
                 active: 'dashboard',
                 navOpen: false,
             });
@@ -562,6 +575,12 @@
             // Creating component Dropdown
             Alpine.data('dropdown', () => ({
                 open: false,
+                init() {
+                    // Close children when sidebar collapses
+                    this.$watch('$store.sidebar.full', val => {
+                        if (!val) this.open = false;
+                    });
+                },
                 toggle(tab) {
                     this.open = !this.open;
                     Alpine.store('sidebar').active = tab;
