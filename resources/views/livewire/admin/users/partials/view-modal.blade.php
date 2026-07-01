@@ -155,7 +155,7 @@
                         <div>
                             <span class="text-xs text-gray-400">Phone</span>
                             <p class="text-sm font-medium text-gray-800 mt-0.5">
-                                {{ $user->country_code ? '+' . $user->country_code . ' ' : '' }}{{ $user->phone }}
+                                {{ $user->country_code ? $user->country_code . ' ' : '' }}{{ $user->phone }}
                             </p>
                         </div>
                     @endif
@@ -300,7 +300,7 @@
                                 <p class="text-sm font-medium text-gray-800">Phone
                                     @if($user?->phone)
                                         <span class="text-xs text-gray-400 font-normal ml-1">
-                                            {{ $user->country_code ? '+' . $user->country_code . ' ' : '' }}{{ $user->phone }}
+                                            {{ $user->country_code ? $user->country_code . ' ' : '' }}{{ $user->phone }}
                                         </span>
                                     @endif
                                 </p>
