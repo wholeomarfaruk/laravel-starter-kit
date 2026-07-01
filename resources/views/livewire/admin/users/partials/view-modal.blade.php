@@ -146,13 +146,7 @@
                         <div>
                             <span class="text-xs text-gray-400">Gender</span>
                             <p class="text-sm font-medium text-gray-800 mt-0.5">
-                                {{ match($user->gender) {
-                                    'male'              => 'Male',
-                                    'female'            => 'Female',
-                                    'other'             => 'Other',
-                                    'prefer_not_to_say' => 'Prefer not to say',
-                                    default             => ucfirst($user->gender)
-                                } }}
+                                {{ $genders->firstWhere('slug', $user->gender)?->name ?? ucfirst(str_replace('_', ' ', $user->gender)) }}
                             </p>
                         </div>
                     @endif
@@ -192,10 +186,9 @@
                         <select wire:model="editGender"
                             class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 bg-white">
                             <option value="">— Not specified —</option>
-                            <option value="male">Male</option>
-                            <option value="female">Female</option>
-                            <option value="other">Other</option>
-                            <option value="prefer_not_to_say">Prefer not to say</option>
+                            @foreach ($genders as $genderItem)
+                                <option value="{{ $genderItem->slug }}">{{ $genderItem->name }}</option>
+                            @endforeach
                         </select>
                         @error('editGender') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
                     </div>
@@ -203,12 +196,10 @@
                     <div>
                         <label class="block text-xs font-medium text-gray-600 mb-1">Phone Number</label>
                         <div class="flex gap-2">
-                            <div class="relative w-28 shrink-0">
-                                <span class="absolute left-3 top-2 text-sm text-gray-400 pointer-events-none select-none">+</span>
-                                <input wire:model="editCountryCode" type="text"
-                                    class="w-full rounded-lg border border-gray-300 pl-6 pr-2 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
-                                    placeholder="880" maxlength="5">
-                            </div>
+                            @include('livewire.admin.users.partials._phone-code-picker', [
+                                'wireProperty' => 'editCountryCode',
+                                'inputClass'   => 'w-32 shrink-0',
+                            ])
                             <input wire:model="editPhone" type="text"
                                 class="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
                                 placeholder="Phone number">

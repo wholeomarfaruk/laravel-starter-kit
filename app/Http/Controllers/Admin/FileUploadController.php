@@ -77,6 +77,18 @@ public function storeAdmin(Request $request)
         'path' => $finalPath,
     ]);
 
+    activity('uploads')
+        ->causedBy(auth()->user())
+        ->performedOn($file)
+        ->withProperties([
+            'name'      => $fileName,
+            'type'      => $file->type,
+            'extension' => $file->extension,
+            'size'      => filesize($finalFullPath),
+        ])
+        ->event('created')
+        ->log("File \"{$fileName}\" was uploaded");
+
     return response()->json($file->id);
 }
 

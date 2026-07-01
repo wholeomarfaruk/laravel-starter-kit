@@ -3,6 +3,8 @@
 namespace App\Livewire\Admin\Users;
 
 use App\Livewire\Traits\WithMediaPicker;
+use App\Models\Country;
+use App\Models\Gender;
 use App\Models\Panel;
 use App\Models\User;
 use App\Services\UserService;
@@ -21,11 +23,20 @@ class Users extends Component
     public $role_name;
     public $UserModal  = false;
     public $newUserName, $newUserEmail, $newUserPassword;
+    public string $newUserGender      = '';
+    public string $newUserPhone       = '';
+    public string $newUserCountryCode = '';
+    public string $newUserRole        = '';
+    public string $newUserAddress     = '';
+    public string $newUserBio         = '';
+    public array  $newUserPanels      = [];
     public string $search         = '';
     public string $filterRole     = '';
     public string $filterPanel    = '';
     public string $filterVerified = '';
     public $panels;
+    public $countries;
+    public $genders;
     public array  $panelIds    = [];
     public ?int   $avatar_id    = null;
     public string $editName     = '';
@@ -39,12 +50,13 @@ class Users extends Component
 
     public function mount(UserService $userService): void
     {
-        $this->users  = $userService->all();
-        $this->roles  = Role::all();
-        $this->panels = Panel::all();
+        $this->users     = $userService->all();
+        $this->roles     = Role::all();
+        $this->panels    = Panel::all();
+        $this->countries = Country::active()->orderBy('name')->get()->unique('phone_code')->values();
+        $this->genders   = Gender::active()->get();
     }
 
-    // ── Override trait so we can auto-save avatar immediately after selection ──
     public function mediaSelected($field, $id): void
     {
         if (\is_array($id)) {
@@ -56,6 +68,14 @@ class Users extends Component
 
         if ($field === 'avatar_id' && $this->user) {
             $this->user->update(['avatar_id' => $this->avatar_id]);
+
+            activity('users')
+                ->causedBy(auth()->user())
+                ->performedOn($this->user)
+                ->withProperties(['avatar_id' => $this->avatar_id])
+                ->event('updated')
+                ->log("Avatar updated for \"{$this->user->name}\"");
+
             $this->dispatch('toast', ['type' => 'success', 'message' => 'Profile picture updated']);
         }
     }
@@ -68,7 +88,19 @@ class Users extends Component
             return;
         }
 
+        $oldRole = $this->user->roles->first()?->name;
+
         $userService->assignRole($this->user, $value);
+
+        activity('users')
+            ->causedBy(auth()->user())
+            ->performedOn($this->user)
+            ->withProperties([
+                'old'        => ['role' => $oldRole],
+                'attributes' => ['role' => $value],
+            ])
+            ->event('updated')
+            ->log("Role changed to \"{$value}\" for \"{$this->user->name}\"");
 
         $this->dispatch('toast', ['type' => 'success', 'message' => 'Role updated']);
     }
@@ -79,16 +111,38 @@ class Users extends Component
             return;
         }
 
+        $panel = Panel::find($panelId);
+
         $this->user->panels()->toggle($panelId);
         $this->user->load('panels');
         $this->panelIds = $this->user->panels->pluck('id')->toArray();
 
         $isNowAttached = \in_array($panelId, $this->panelIds, true);
 
+        activity('users')
+            ->causedBy(auth()->user())
+            ->performedOn($this->user)
+            ->withProperties([
+                'panel_id'   => $panelId,
+                'panel_name' => $panel?->name,
+                'action'     => $isNowAttached ? 'assigned' : 'removed',
+            ])
+            ->event('updated')
+            ->log("Panel \"{$panel?->name}\" " . ($isNowAttached ? 'assigned to' : 'removed from') . " \"{$this->user->name}\"");
+
         $this->dispatch('toast', [
             'type'    => 'success',
             'message' => $isNowAttached ? 'Panel assigned' : 'Panel removed',
         ]);
+    }
+
+    public function toggleNewUserPanel(int $panelId): void
+    {
+        if (in_array($panelId, $this->newUserPanels, true)) {
+            $this->newUserPanels = array_values(array_diff($this->newUserPanels, [$panelId]));
+        } else {
+            $this->newUserPanels[] = $panelId;
+        }
     }
 
     public function clearFilters(): void
@@ -123,10 +177,19 @@ class Users extends Component
             abort(404);
         }
 
+        $name  = $user->name;
+        $email = $user->email;
+
         if (! $userService->delete($user)) {
             $this->dispatch('toast', ['type' => 'error', 'message' => 'Superadmin cannot be deleted']);
             return;
         }
+
+        activity('users')
+            ->causedBy(auth()->user())
+            ->withProperties(['name' => $name, 'email' => $email])
+            ->event('deleted')
+            ->log("User \"{$name}\" ({$email}) was deleted");
 
         $this->dispatch('toast', ['type' => 'success', 'message' => 'User deleted successfully']);
     }
@@ -163,6 +226,12 @@ class Users extends Component
         $this->avatar_id = null;
         $this->user->update(['avatar_id' => null]);
 
+        activity('users')
+            ->causedBy(auth()->user())
+            ->performedOn($this->user)
+            ->event('updated')
+            ->log("Avatar removed for \"{$this->user->name}\"");
+
         $this->dispatch('toast', ['type' => 'success', 'message' => 'Profile picture removed']);
     }
 
@@ -176,12 +245,22 @@ class Users extends Component
             'editName'        => 'required|min:2|max:255',
             'editEmail'       => 'required|email|unique:users,email,' . $this->user->id,
             'editPassword'    => 'nullable|min:8',
-            'editGender'      => 'nullable|in:male,female,other,prefer_not_to_say',
+            'editGender'      => 'nullable|exists:genders,slug',
             'editPhone'       => 'nullable|string|max:20',
-            'editCountryCode' => 'nullable|string|max:5',
+            'editCountryCode' => 'nullable|exists:countries,phone_code',
             'editAddress'     => 'nullable|max:500',
             'editBio'         => 'nullable|max:1000',
         ]);
+
+        $old = [
+            'name'         => $this->user->name,
+            'email'        => $this->user->email,
+            'gender'       => $this->user->gender,
+            'phone'        => $this->user->phone,
+            'country_code' => $this->user->country_code,
+            'address'      => $this->user->address,
+            'bio'          => $this->user->bio,
+        ];
 
         $emailChanged = $this->editEmail !== $this->user->email;
         $phoneChanged = $this->editPhone !== ($this->user->phone ?? '');
@@ -209,11 +288,42 @@ class Users extends Component
         }
 
         $this->user->update($data);
+
+        $new = [
+            'name'         => $this->editName,
+            'email'        => $this->editEmail,
+            'gender'       => $this->editGender ?: null,
+            'phone'        => $this->editPhone ?: null,
+            'country_code' => $this->editCountryCode ?: null,
+            'address'      => $this->editAddress ?: null,
+            'bio'          => $this->editBio ?: null,
+        ];
+
+        $changed = array_filter(array_keys($new), fn ($k) => ($old[$k] ?? null) != ($new[$k] ?? null));
+
+        if (! empty($changed) || $this->editPassword !== '') {
+            $props = [
+                'old'        => array_intersect_key($old, array_flip($changed)),
+                'attributes' => array_intersect_key($new, array_flip($changed)),
+            ];
+
+            if ($this->editPassword !== '') {
+                $props['attributes']['password'] = '(changed)';
+            }
+
+            activity('users')
+                ->causedBy(auth()->user())
+                ->performedOn($this->user)
+                ->withProperties($props)
+                ->event('updated')
+                ->log("User \"{$this->user->name}\" was updated");
+        }
+
         $this->user         = $this->user->fresh(['roles', 'panels']);
         $this->editPassword = '';
 
         $this->dispatch('toast', ['type' => 'success', 'message' => 'User updated successfully']);
-        $this->dispatch('user-saved'); // tells Alpine to exit edit mode
+        $this->dispatch('user-saved');
     }
 
     public function sendPasswordResetLink(int $id): void
@@ -222,6 +332,14 @@ class Users extends Component
         if (! $user) return;
 
         Password::sendResetLink(['email' => $user->email]);
+
+        activity('users')
+            ->causedBy(auth()->user())
+            ->performedOn($user)
+            ->withProperties(['email' => $user->email])
+            ->event('updated')
+            ->log("Password reset link sent to \"{$user->email}\"");
+
         $this->dispatch('toast', ['type' => 'success', 'message' => 'Password reset link sent to ' . $user->email]);
     }
 
@@ -231,6 +349,12 @@ class Users extends Component
         if (! $user) return;
 
         $user->forceFill(['email_verified_at' => now()])->save();
+
+        activity('users')
+            ->causedBy(auth()->user())
+            ->performedOn($user)
+            ->event('updated')
+            ->log("Email manually verified for \"{$user->name}\"");
 
         if ($this->user?->id === $id) {
             $this->user = $user->fresh(['roles', 'panels']);
@@ -246,6 +370,12 @@ class Users extends Component
 
         $user->forceFill(['email_verified_at' => null])->save();
 
+        activity('users')
+            ->causedBy(auth()->user())
+            ->performedOn($user)
+            ->event('updated')
+            ->log("Email verification revoked for \"{$user->name}\"");
+
         if ($this->user?->id === $id) {
             $this->user = $user->fresh(['roles', 'panels']);
         }
@@ -259,6 +389,12 @@ class Users extends Component
         if (! $user) return;
 
         $user->forceFill(['phone_verified_at' => now()])->save();
+
+        activity('users')
+            ->causedBy(auth()->user())
+            ->performedOn($user)
+            ->event('updated')
+            ->log("Phone manually verified for \"{$user->name}\"");
 
         if ($this->user?->id === $id) {
             $this->user = $user->fresh(['roles', 'panels']);
@@ -274,6 +410,12 @@ class Users extends Component
 
         $user->forceFill(['phone_verified_at' => null])->save();
 
+        activity('users')
+            ->causedBy(auth()->user())
+            ->performedOn($user)
+            ->event('updated')
+            ->log("Phone verification revoked for \"{$user->name}\"");
+
         if ($this->user?->id === $id) {
             $this->user = $user->fresh(['roles', 'panels']);
         }
@@ -284,18 +426,53 @@ class Users extends Component
     public function registerUser(UserService $userService): void
     {
         $this->validate([
-            'newUserName'     => 'required|min:3',
-            'newUserEmail'    => 'required|email|unique:users,email',
-            'newUserPassword' => 'required|min:8',
+            'newUserName'        => 'required|min:3|max:255',
+            'newUserEmail'       => 'required|email|unique:users,email',
+            'newUserPassword'    => 'required|min:8',
+            'newUserGender'      => 'nullable|exists:genders,slug',
+            'newUserPhone'       => 'nullable|string|max:20',
+            'newUserCountryCode' => 'nullable|exists:countries,phone_code',
+            'newUserRole'        => 'nullable|exists:roles,name',
+            'newUserAddress'     => 'nullable|max:500',
+            'newUserBio'         => 'nullable|max:1000',
         ]);
 
-        $userService->create([
-            'name'     => $this->newUserName,
-            'email'    => $this->newUserEmail,
-            'password' => $this->newUserPassword,
+        $user = $userService->create([
+            'name'         => $this->newUserName,
+            'email'        => $this->newUserEmail,
+            'password'     => $this->newUserPassword,
+            'gender'       => $this->newUserGender ?: null,
+            'phone'        => $this->newUserPhone ?: null,
+            'country_code' => $this->newUserCountryCode ?: null,
+            'address'      => $this->newUserAddress ?: null,
+            'bio'          => $this->newUserBio ?: null,
         ]);
 
-        $this->reset(['newUserName', 'newUserEmail', 'newUserPassword']);
+        if ($this->newUserRole) {
+            $userService->assignRole($user, $this->newUserRole);
+        }
+
+        if (! empty($this->newUserPanels)) {
+            $user->panels()->sync($this->newUserPanels);
+        }
+
+        activity('users')
+            ->causedBy(auth()->user())
+            ->performedOn($user)
+            ->withProperties([
+                'name'   => $user->name,
+                'email'  => $user->email,
+                'role'   => $this->newUserRole ?: null,
+                'panels' => $this->newUserPanels,
+            ])
+            ->event('created')
+            ->log("User \"{$user->name}\" ({$user->email}) was created");
+
+        $this->reset([
+            'newUserName', 'newUserEmail', 'newUserPassword',
+            'newUserGender', 'newUserPhone', 'newUserCountryCode',
+            'newUserRole', 'newUserPanels', 'newUserAddress', 'newUserBio',
+        ]);
         $this->UserModal = false;
         $this->dispatch('toast', ['type' => 'success', 'message' => 'User created successfully']);
     }

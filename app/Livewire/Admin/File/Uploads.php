@@ -59,17 +59,28 @@ class Uploads extends Component
         $file = File::find($id);
 
         if ($file) {
+            $fileName = $file->name;
+            $fileType = $file->type;
+
             foreach (FileItem::where('file_id', $file->id)->get() as $item) {
                 Storage::disk('public')->delete($item->path);
                 $item->delete();
             }
             $file->delete();
             $this->selected = array_values(array_diff($this->selected, [$id]));
+
+            activity('uploads')
+                ->causedBy(auth()->user())
+                ->withProperties(['name' => $fileName, 'type' => $fileType])
+                ->event('deleted')
+                ->log("File \"{$fileName}\" was deleted");
         }
     }
 
     public function deleteSelected(): void
     {
+        $count = count($this->selected);
+
         foreach ($this->selected as $id) {
             $this->delete($id);
         }

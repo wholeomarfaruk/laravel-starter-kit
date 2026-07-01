@@ -23,9 +23,14 @@ class UserService
     public function create(array $data): User
     {
         return User::create([
-            'name'     => $data['name'],
-            'email'    => $data['email'],
-            'password' => Hash::make($data['password']),
+            'name'         => $data['name'],
+            'email'        => $data['email'],
+            'password'     => Hash::make($data['password']),
+            'gender'       => $data['gender'] ?? null,
+            'phone'        => $data['phone'] ?? null,
+            'country_code' => $data['country_code'] ?? null,
+            'address'      => $data['address'] ?? null,
+            'bio'          => $data['bio'] ?? null,
         ]);
     }
 
