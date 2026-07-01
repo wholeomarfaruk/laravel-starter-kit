@@ -4,9 +4,6 @@ namespace App\Providers;
 
 use App\Listeners\AuthActivityListener;
 use App\Models\ActivityLog;
-use App\Models\User;
-use App\Policies\RolePolicy;
-use App\Policies\UserPolicy;
 use Carbon\CarbonImmutable;
 use Illuminate\Auth\Events\Failed;
 use Illuminate\Auth\Events\Login;
@@ -15,11 +12,9 @@ use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 use Laravel\Fortify\Contracts\LoginResponse;
-use Spatie\Permission\Models\Role;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -31,15 +26,8 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configureDefaults();
-        $this->registerPolicies();
         $this->registerActivityTracking();
         $this->registerAuthListeners();
-    }
-
-    protected function registerPolicies(): void
-    {
-        Gate::policy(User::class, UserPolicy::class);
-        Gate::policy(Role::class, RolePolicy::class);
     }
 
     protected function registerActivityTracking(): void
